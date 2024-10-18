@@ -22,6 +22,7 @@ return new class extends Migration
             $table->mediumInteger("boss1lvl");
             $table->mediumInteger("boss2lvl");
             $table->mediumInteger("boss3lvl");
+            $table->integer("privilege");
             $table->softDeletes();
             $table->rememberToken();
             $table->timestamps();

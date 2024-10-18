@@ -26,6 +26,7 @@ class DatabaseSeeder extends Seeder
                 'boss1lvl' => fake()->numberBetween(1, 10),
                 'boss2lvl' => fake()->numberBetween(1, 10),
                 'boss3lvl' => fake()->numberBetween(1, 10),
+                'privilege' => fake()->randomElement([1, 10]),
             ]);
         }
         

@@ -20,10 +20,22 @@ class UserController extends Controller
 
         $user = User::where("email", $email)->first();
         
-        if(!$user || Hash::check($password, $password ? $user->password : '')){
+        if(!$user || !Hash::check($password, $password ? $user->password : '')){
             return response()->json([
-                
-            ])
+                'message' => "Invalid email or password"       
+            ], 401);
         }
+
+        $user->tokens()->delete();
+
+        $user->token = $user->createToken("access")->plainTextToken;
+
+        return response()->json([
+            'user' => [
+                "id" =>$user->id,
+                "token" => $user->token,
+                "privilege" => $user->privilege,
+            ],
+        ]);
     }
 }
