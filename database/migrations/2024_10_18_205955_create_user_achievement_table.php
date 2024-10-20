@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('user_achievement', function (Blueprint $table) {
             $table->id();
-            $table->integer('user_id');
-            $table->integer('achievement_id');
+            $table->unsignedBigInteger('user_id');
+            $table->unsignedBigInteger('achievement_id');
 
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->foreign('achievement_id')->references('id')->on('achievements')->onDelete('cascade');

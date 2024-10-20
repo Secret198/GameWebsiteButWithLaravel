@@ -16,8 +16,9 @@ return new class extends Migration
             $table->text('post');
             $table->string('image');        //Ez még kérdéses
             $table->integer('likes');
-            $table->integer('user_id');
+            $table->unsignedBigInteger('user_id');
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+            $table->softDeletes();
             $table->timestamps();
         });
     }

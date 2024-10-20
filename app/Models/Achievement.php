@@ -11,6 +11,6 @@ class Achievement extends Model
     public $timestamps = false;
 
     public function user(){
-        return $this->belongsToMany(User::class);
+        return $this->morphedByMany(User::class, 'fk_achievements');
     }
 }

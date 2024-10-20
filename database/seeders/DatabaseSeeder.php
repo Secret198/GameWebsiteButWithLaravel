@@ -6,6 +6,8 @@ use App\Models\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
+use function Laravel\Prompts\progress;
+
 
 class DatabaseSeeder extends Seeder
 {
@@ -14,7 +16,8 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
+        $seedNum = 10;
+        $userBar = progress("Seeding Users", $seedNum);
         for($i = 0; $i < 10;$i++){
             User::factory()->create([
                 'name' => 'Test User'.$i,
@@ -28,7 +31,15 @@ class DatabaseSeeder extends Seeder
                 'boss3lvl' => fake()->numberBetween(1, 10),
                 'privilege' => fake()->randomElement([1, 10]),
             ]);
+            $userBar->advance();
         }
+        $userBar->finish();
+
+        $this->call([
+            PostSeeder::class,
+            AchievementSeeder::class,
+            PostUserSeeder::class,
+        ]);
         
     }
 }
