@@ -1,1 +1,31 @@
-Work out the relationship types for the many to many 
+Implement abilities
+Check abilities when regenerating token
+User modify
+User delete
+Post create
+Post modify
+Post delete
+Achievement create
+Achievement modify
+Achievement delete
+
+make admin test
+
+We can expire the tokens
+
+
+Abilities:
+    Everyone:
+        user-update-everyone
+        post-create
+        post-update
+        post-delete
+    
+    Admin:
+        user-update-admin
+        user-delete
+        user-achievement-update
+        user-achievement-delete 
+        achievement-create
+        achievement-update
+        achievement-delete

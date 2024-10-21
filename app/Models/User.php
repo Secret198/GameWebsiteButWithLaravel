@@ -23,6 +23,12 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'deaths',
+        'kills',
+        'points',
+        'boss1lvl',
+        'boss2lvl',
+        'boss3lvl',
     ];
 
     /**
