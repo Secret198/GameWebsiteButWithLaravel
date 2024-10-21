@@ -24,8 +24,8 @@ class PostUserSeeder extends Seeder
         
         for( $i = 0; $i < $seedNum; $i++ ){   
             DB::table('user_achievement')->insert([
-                'user_id' => fake()->randomElement($users),
-                'achievement_id' => fake()->randomElement($achievements),
+                'user_id' => fake()->randomElement($users)['id'],
+                'achievement_id' => fake()->randomElement($achievements)['id'],
             ]);
             $bar->advance();
         }
