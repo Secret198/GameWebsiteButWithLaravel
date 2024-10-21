@@ -10,7 +10,7 @@ class Achievement extends Model
     use SoftDeletes;
     public $timestamps = false;
 
-    public function user(){
-        return $this->morphedByMany(User::class, 'fk_achievements');
+    public function users(){
+        return $this->belongsToMany(User::class);
     }
 }

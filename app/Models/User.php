@@ -48,11 +48,11 @@ class User extends Authenticatable
         ];
     }
 
-    public function post(){
+    public function posts(){
         return $this->hasMany(Post::class);
     }
 
     public function achievements(){
-        return $this->morphedToMany(Achievement::class, 'fk_achievements');
+        return $this->belongsToMany(Achievement::class);
     }
 }
