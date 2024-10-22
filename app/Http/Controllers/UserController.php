@@ -29,12 +29,20 @@ class UserController extends Controller
 
         $user->tokens()->delete();
 
-        $user->token = $user->createToken("access")->plainTextToken;        //Todo check permissions
+        switch($user->privilege){
+            case 1:
+                $user->token = $user->createToken("access", ["user-update", "post-create", "post-update", "post-delete"])->plainTextToken;       
+                break;
+            case 10:
+                $user->token = $user->createToken("access", ["*"])->plainTextToken;       
+                break;
+        }
 
         return response()->json([
             'user' => [
                 "id" =>$user->id,
                 "token" => $user->token,
+                "privilege" => $user->privilege
             ],
         ]);
     }
@@ -63,12 +71,13 @@ class UserController extends Controller
         $user->privilege = 1;
         $user->save();
 
-        $user->token = $user->createToken("access", ["user-update-everyone", "post-create", "post-delete", "post-update"])->plainTextToken;
+        $user->token = $user->createToken("access", ["user-update", "post-create", "post-delete", "post-update"])->plainTextToken;
 
         return response()->json([
             "user" => [
                 "id" => $user->id,
                 "token" => $user->token,
+                "privilege" => $user->privilege
             ]
         ]);
         
@@ -79,37 +88,39 @@ class UserController extends Controller
 
         $user->tokens()->delete();
         $user->token = $user->createToken("access", ["*"])->plainTextToken;     //Ha akarjuk akkor egyesével beírogatni
+        $user->update(["privilege" => 10]);
 
         return response()->json([
             "user"=> [
                 "id"=> $user->id,
                 "token"=> $user->token,
+                "privilege" => $user->privilege
             ]
             ]);
     }
 
-    public function updateEveryone(Request $request, $id){
-        $request->validate([
-            "name" => "nullable|min:3",
-            "email" => "nullable|email"
-        ]);
-        $user = User::findOrFail($id);
+    // public function updateEveryone(Request $request, $id){
+    //     $request->validate([
+    //         "name" => "nullable|min:3",
+    //         "email" => "nullable|email"
+    //     ]);
+    //     $user = User::findOrFail($id);
         
-        if($request->has("name")){
-            $user->update(["name" => $request->input("name")]);
-        }
-        if($request->has("email")){
-            $user->update(["email"=> $request->input("email")]);
-        }
+    //     if($request->has("name")){
+    //         $user->update(["name" => $request->input("name")]);
+    //     }
+    //     if($request->has("email")){
+    //         $user->update(["email"=> $request->input("email")]);
+    //     }
 
-        return response()->json([
-            "id" => $user->id,
-            "name" => $user->name,
-            "email" => $user->email
-        ]);
-    }
+    //     return response()->json([
+    //         "id" => $user->id,
+    //         "name" => $user->name,
+    //         "email" => $user->email
+    //     ]);
+    // }
 
-    public function updateAdmin(Request $request, $id){
+    public function update(Request $request, $id){
         $request->validate([
             "name" => "nullable|min:3",
             "email" => "nullable|email",
@@ -121,9 +132,7 @@ class UserController extends Controller
             "boss3lvl" => "nullable|numeric",
         ]);
         $user = User::findOrFail($id);
-        
 
-        $user->update(["deaths" => $request->input("deaths")]);
         $user->update($request->all());
 
         return response()->json([
@@ -139,4 +148,11 @@ class UserController extends Controller
         ]);
     }
 
+    public function delete(Request $request, $id){
+        $user = User::findOrFail($id);
+        $user->delete();
+        return response()->json([
+            "message" => "User deleted successfully"
+        ]);
+    }
 }

@@ -1,7 +1,3 @@
-Implement abilities
-Check abilities when regenerating token
-User modify
-User delete
 Post create
 Post modify
 Post delete
@@ -9,14 +5,12 @@ Achievement create
 Achievement modify
 Achievement delete
 
-make admin test
-
 We can expire the tokens
 
 
 Abilities:
     Everyone:
-        user-update-everyone
+        user-update
         post-create
         post-update
         post-delete
