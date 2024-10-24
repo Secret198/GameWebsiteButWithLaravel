@@ -1,9 +1,12 @@
+User restore
 Post create
 Post modify
 Post delete
+Post restore
 Achievement create
 Achievement modify
 Achievement delete
+Achievement restore
 
 We can expire the tokens
 
