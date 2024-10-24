@@ -41,6 +41,7 @@ class UserController extends Controller
         return response()->json([
             'user' => [
                 "id" =>$user->id,
+                "name" => $user->name,
                 "token" => $user->token,
                 "privilege" => $user->privilege
             ],
