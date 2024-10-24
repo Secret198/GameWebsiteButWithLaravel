@@ -10,6 +10,7 @@ Achievement restore
 
 We can expire the tokens
 
+Customize error messages
 
 Abilities:
     Everyone:
