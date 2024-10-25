@@ -42,6 +42,7 @@ class UserController extends Controller
             'user' => [
                 "id" =>$user->id,
                 "name" => $user->name,
+                "deaths" => $user->deaths,
                 "token" => $user->token,
                 "privilege" => $user->privilege
             ],
