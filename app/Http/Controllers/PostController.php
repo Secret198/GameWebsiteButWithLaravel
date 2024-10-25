@@ -2,11 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use Laravel\Sanctum\PersonalAccessToken;
+use Storage;
 use App\Models\Post;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
-use Storage;
+use Illuminate\Support\Facades\Hash;
 
 class PostController extends Controller
 {
@@ -54,14 +57,23 @@ class PostController extends Controller
             "likes" => "nullable|numeric"
         ]);
 
+        $accessTokenUser = PersonalAccessToken::findToken($request->bearerToken())->tokenable;
         $post = Post::findOrFail($id);
+        if($accessTokenUser->id != $post->user_id && $accessTokenUser != 10){       //test this shit and do it with everything else
+            return response()->json([
+                "message" => "Action not allowed"
+            ], 401);
+        }
+
         if(isset($request->image)){
             Storage::disk("local")->delete($post->image);
             $imageName = $post->processImage($request->image, $post->id);
             $post->image = $imageName;
         }
+        $post->post = isset($request->post) ? $request->post : $post->post;
+        $post->likes = isset($request->likes) ? $request->likes : $post->likes;
 
-        $post->update();        //somehow update it
+        $post->save();
         return response()->json([
             "post" => [
                 "id"=> $post->id,

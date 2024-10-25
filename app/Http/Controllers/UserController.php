@@ -11,17 +11,17 @@ use Laravel\Sanctum\Http\Middleware\CheckAbilities;
 class UserController extends Controller
 {
     public function login(Request $request){
-        $email = $request->input("email");
-        $password = $request->input("password");
 
         $request->validate([
             "email" => "required|email",
             "password"=> "required",
         ]);
 
+        $email = $request->input("email");
+        $password = $request->input("password");
+
         $user = User::where("email", $email)->first();
-        
-        if(!$user || !Hash::check($password, $password ? $user->password : '')){
+        if(!$user || !Hash::check($password, $password ? $user->password : '')){//
             return response()->json([
                 'message' => "Invalid email or password"       
             ], 401);
@@ -31,7 +31,7 @@ class UserController extends Controller
 
         switch($user->privilege){
             case 1:
-                $user->token = $user->createToken("access", ["user-update", "post-create", "post-update", "post-delete"])->plainTextToken;       
+                $user->token = $user->createToken("access", ["user-update", "post-create", "post-update", "post-delete", "post-get-all", "achievement-get-all"])->plainTextToken;       
                 break;
             case 10:
                 $user->token = $user->createToken("access", ["*"])->plainTextToken;       

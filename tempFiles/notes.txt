@@ -7,6 +7,8 @@ Achievement modify
 Achievement delete
 Achievement restore
 
+People can only modify their own shit
+
 if the post table is empty
 
 We can expire the tokens
@@ -19,8 +21,11 @@ Abilities:
         post-create
         post-update
         post-delete
+        post-get-all
+        achievement-get-all
     
     Admin:
+        user-get-all
         user-update-admin
         user-delete
         user-achievement-update
