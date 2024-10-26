@@ -2,10 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
 use Hash;
+use App\Models\User;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use Laravel\Sanctum\PersonalAccessToken;
 use Laravel\Sanctum\Http\Middleware\CheckAbilities;
 
 class UserController extends Controller
@@ -27,16 +28,7 @@ class UserController extends Controller
             ], 401);
         }
 
-        $user->tokens()->delete();
-
-        switch($user->privilege){
-            case 1:
-                $user->token = $user->createToken("access", ["user-update", "post-create", "post-update", "post-delete", "post-get-all", "achievement-get-all"])->plainTextToken;       
-                break;
-            case 10:
-                $user->token = $user->createToken("access", ["*"])->plainTextToken;       
-                break;
-        }
+        $user->regenerateToken();
 
         return response()->json([
             'user' => [
@@ -73,7 +65,7 @@ class UserController extends Controller
         $user->privilege = 1;
         $user->save();
 
-        $user->token = $user->createToken("access", ["user-update", "post-create", "post-delete", "post-update"])->plainTextToken;
+        $user->token = $user->createToken("access", $user->baseAbilities)->plainTextToken;
 
         return response()->json([
             "user" => [
@@ -85,18 +77,19 @@ class UserController extends Controller
         
     }
 
-    public function makeUserAdmin(Request $request, $id){
+    public function makeUserAdmin($id){
         $user = User::findOrFail($id);
 
         $user->tokens()->delete();
-        $user->token = $user->createToken("access", ["*"])->plainTextToken;     //Ha akarjuk akkor egyesével beírogatni
-        $user->update(["privilege" => 10]);
+        $user->createToken("access", ["*"])->plainTextToken;     //Ha akarjuk akkor egyesével beírogatni
+        $user->privilege = 10;
+        $user->save();
 
         return response()->json([
+            "message" => "Admin created successfully",
             "user"=> [
                 "id"=> $user->id,
-                "token"=> $user->token,
-                "privilege" => $user->privilege
+                "privilege" => $user->privilege,
             ]
             ]);
     }
@@ -133,7 +126,14 @@ class UserController extends Controller
             "boss2lvl" => "nullable|numeric",
             "boss3lvl" => "nullable|numeric",
         ]);
+
+        $accessTokenUser = PersonalAccessToken::findToken($request->bearerToken())->tokenable;
         $user = User::findOrFail($id);
+        if($accessTokenUser->id != $user->id && $accessTokenUser->privilege != 10){ 
+            return response()->json([
+                "message" => "Action not allowed"
+            ], 403);
+        }
 
         $user->update($request->all());
 
@@ -150,11 +150,29 @@ class UserController extends Controller
         ]);
     }
 
-    public function delete(Request $request, $id){
-        $user = User::findOrFail($id);
+    public function delete($id){
+        $user = User::findOrFail($id);        
         $user->delete();
         return response()->json([
             "message" => "User deleted successfully"
+        ]);
+    }
+
+    public function restore($id){
+        $user = User::withTrashed()->find($id);
+        if(!$user){
+            return response()->json([
+                "message" => "Unable to find user"
+            ]);
+        }
+        $user->restore();
+        $user->regenerateToken();
+        return response()->json([
+            "message" => "User restored successfully",
+            "user" => [
+                "id" => $user->id,
+                "privilege" => $user->privilege
+            ]
         ]);
     }
 }

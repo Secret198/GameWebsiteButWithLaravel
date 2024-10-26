@@ -41,6 +41,21 @@ class User extends Authenticatable
         'remember_token',
     ];
 
+    public $baseAbilities = ["user-update", "post-create", "post-update", "post-delete", "post-get-all", "achievement-get-all", "user-get-all"];
+
+    public function regenerateToken(){
+        $this->tokens()->delete();
+        
+        switch($this->privilege){
+            case 1:
+                $this->token = $this->createToken("access", $this->baseAbilities)->plainTextToken;       
+                break;
+            case 10:
+                $this->token = $this->createToken("access", ["*"])->plainTextToken;       
+                break;
+        }
+    }
+
     /**
      * Get the attributes that should be cast.
      *

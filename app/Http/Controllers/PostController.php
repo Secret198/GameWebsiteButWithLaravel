@@ -59,7 +59,7 @@ class PostController extends Controller
 
         $accessTokenUser = PersonalAccessToken::findToken($request->bearerToken())->tokenable;
         $post = Post::findOrFail($id);
-        if($accessTokenUser->id != $post->user_id && $accessTokenUser != 10){       //test this shit and do it with everything else
+        if($accessTokenUser->id != $post->user_id && $accessTokenUser->privilege != 10){
             return response()->json([
                 "message" => "Action not allowed"
             ], 401);
@@ -82,8 +82,15 @@ class PostController extends Controller
         ]);
     }
 
-    public function delete($id){
+    public function delete(Request $request, $id)
+    {
+        $accessTokenUser = PersonalAccessToken::findToken($request->bearerToken())->tokenable;
         $post = Post::findOrFail($id);
+        if($accessTokenUser->id != $post->user_id && $accessTokenUser->privilege != 10){ 
+            return response()->json([
+                "message" => "Action not allowed"
+            ], 401);
+        }
         $post->delete();
         return response()->json([
             "message" => "Post deleted successfully"
