@@ -1,10 +1,8 @@
 Post create !
 Post modify !
-Post restore
-Achievement create
-Achievement modify
-Achievement delete
-Achievement restore
+User get
+Post get
+Getting achievement and shit with pivot table
 
 
 if the post table is empty

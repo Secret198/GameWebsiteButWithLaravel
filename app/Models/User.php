@@ -56,6 +56,11 @@ class User extends Authenticatable
         }
     }
 
+    public function checkForAchievements(){
+        $this->achievements()->getAll();
+        return [];
+    }
+
     /**
      * Get the attributes that should be cast.
      *

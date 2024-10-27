@@ -43,9 +43,9 @@ class PostController extends Controller
         $post->save();
 
         return response()->json([
+            "message" => "Post created successfully",
             "post" => [
                 "id" => $post->id,
-                "message" => "Post created successfully"
             ]
         ]);
     }
@@ -75,9 +75,9 @@ class PostController extends Controller
 
         $post->save();
         return response()->json([
+            "message"=> "Post updated successfully",
             "post" => [
                 "id"=> $post->id,
-                "message"=> "Post updated successfully"
             ]
         ]);
     }
@@ -97,5 +97,14 @@ class PostController extends Controller
         ]);
     }
 
-    
+    public function restore($id){
+        $post = Post::withTrashed()->findOrFail($id);
+        $post->restore();
+        return response()->json([
+            "message" => "Post restored successfully",
+            "post" => [
+                "id" => $post->id
+            ]
+        ]);
+    }
 }

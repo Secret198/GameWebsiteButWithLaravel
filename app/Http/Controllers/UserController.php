@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Hash;
 use App\Models\User;
+use App\Models\Achievement;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Laravel\Sanctum\PersonalAccessToken;
@@ -31,6 +32,7 @@ class UserController extends Controller
         $user->regenerateToken();
 
         return response()->json([
+            "message" => "Login successful",
             'user' => [
                 "id" =>$user->id,
                 "name" => $user->name,
@@ -68,6 +70,7 @@ class UserController extends Controller
         $user->token = $user->createToken("access", $user->baseAbilities)->plainTextToken;
 
         return response()->json([
+            "message" => "User registered successfully",
             "user" => [
                 "id" => $user->id,
                 "token" => $user->token,
@@ -136,17 +139,22 @@ class UserController extends Controller
         }
 
         $user->update($request->all());
+        $newAchievementIdArr = $user->checkForAchievements();
 
         return response()->json([
-            "id" => $user->id,
-            "name" => $user->name,
-            "email" => $user->email,
-            "deaths" => $user->deaths,
-            "kills" => $user->kills,
-            "points" => $user->points,
-            "boss1lvl" => $user->boss1lvl,
-            "boss2lvl" => $user->boss2lvl,
-            "boss3lvl" => $user->boss3lvl,
+            "message" => "User updated successfully",
+            "user" => [
+                "id" => $user->id,
+                "name" => $user->name,
+                "email" => $user->email,
+                "deaths" => $user->deaths,
+                "kills" => $user->kills,
+                "points" => $user->points,
+                "boss1lvl" => $user->boss1lvl,
+                "boss2lvl" => $user->boss2lvl,
+                "boss3lvl" => $user->boss3lvl,
+            ],
+            "new achievements" => $newAchievementIdArr            
         ]);
     }
 
@@ -159,7 +167,7 @@ class UserController extends Controller
     }
 
     public function restore($id){
-        $user = User::withTrashed()->find($id);
+        $user = User::withTrashed()->findOrFail($id);
         if(!$user){
             return response()->json([
                 "message" => "Unable to find user"
@@ -175,4 +183,5 @@ class UserController extends Controller
             ]
         ]);
     }
+
 }
