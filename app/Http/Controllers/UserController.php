@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Hash;
+use App\Models\Post;
 use App\Models\User;
 use App\Models\Achievement;
 use Illuminate\Http\Request;
@@ -139,7 +140,7 @@ class UserController extends Controller
         }
 
         $user->update($request->all());
-        $newAchievementIdArr = $user->checkForAchievements();
+        $user->checkForAchievements();
 
         return response()->json([
             "message" => "User updated successfully",
@@ -154,7 +155,7 @@ class UserController extends Controller
                 "boss2lvl" => $user->boss2lvl,
                 "boss3lvl" => $user->boss3lvl,
             ],
-            "new achievements" => $newAchievementIdArr            
+                        
         ]);
     }
 
@@ -182,6 +183,107 @@ class UserController extends Controller
                 "privilege" => $user->privilege
             ]
         ]);
+    }
+
+    public function getUserData(Request $request, $id){
+        $accessToken = PersonalAccessToken::findToken($request->bearerToken())->abilities;
+        if(in_array("view-all", $accessToken) || in_array("*", $accessToken)){
+            $user = User::withTrashed()->findOrFail($id);
+            $data = [
+                "id" => $user->id,
+                "name" => $user->name,
+                "email" => $user->email,
+                "deaths" => $user->deaths,
+                "kills" => $user->kills,
+                "points" => $user->points,
+                "boss1lvl" => $user->boss1lvl,
+                "boss2lvl" => $user->boss2lvl,
+                "boss3lvl" => $user->boss3lvl,
+                "deleted_at" => $user->deleted_at,
+                "created_at" => $user->created_at,
+                "modified_at" => $user->updated_at
+            ];
+        }
+        else{
+            $user = User::findOrFail($id);
+            $data = [
+                "id" => $user->id,
+                "name" => $user->name,
+                "email" => $user->email,
+                "deaths" => $user->deaths,
+                "kills" => $user->kills,
+                "points" => $user->points,
+                "boss1lvl" => $user->boss1lvl,
+                "boss2lvl" => $user->boss2lvl,
+                "boss3lvl" => $user->boss3lvl,
+                "created_at" => $user->created_at
+            ];
+        }
+
+        $achievements = $user->achievements;
+
+        return response()->json([
+            "user" => $data,
+            "achievements" => $achievements
+        ]);
+    }
+
+    public function getAllUsers(Request $request, $sortByStr, $sortDirStr){
+        $sortBy = request()->query("sort_by", $sortByStr);
+        $sortDir = request()->query("sort_dir", $sortDirStr);
+        $accessToken = PersonalAccessToken::findToken($request->bearerToken())->abilities;
+        if(in_array("view-all", $accessToken) || in_array("*", $accessToken)){
+            $users = User::withTrashed()->select([
+                "id",
+                "name",
+                "created_at",
+                "updated_at",
+                "deleted_at"
+            ])->orderBy($sortBy, $sortDir)->paginate(30);
+        }
+        else{
+            $users = User::select([
+                "id",
+                "name",
+            ])->orderBy($sortBy, $sortDir)->paginate(30);
+        }
+
+        return response()->json([
+            "users" => $users
+        ]);
+           
+    }
+
+    public function getOwnPosts(Request $request, $sortByStr, $sortDirStr){
+        $token = PersonalAccessToken::findToken($request->bearerToken());
+
+        $userId = $token->tokenable->id;
+        
+        $sortBy = request()->query("sort_by", $sortByStr);
+        $sortDir = request()->query("sort_dir", $sortDirStr);
+        $tokenAbilities = $token->abilities;
+        if(in_array("view-all", $tokenAbilities) || in_array("*", $tokenAbilities)){
+            $posts = Post::withTrashed()->select([
+                "id",
+                "post",
+                "created_at",
+                "updated_at",
+                "deleted_at"
+            ])->where("user_id", $userId)->orderBy($sortBy, $sortDir)->paginate(30);
+        }
+        else{
+            $posts = Post::select([
+                "id",
+                "post",
+                "created_at",
+                "updated_at",
+            ])->where("user_id", $userId)->orderBy($sortBy, $sortDir)->paginate(30);
+        }
+
+        return response()->json([
+            "posts" => $posts
+        ]);
+           
     }
 
 }

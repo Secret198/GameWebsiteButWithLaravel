@@ -27,4 +27,11 @@ class Post extends Model
         Storage::disk("local")->put($imageName, $img);
         return $imageName;
     }
+
+    public function getImage(){
+        $image = Storage::disk("local")->get($this->image);
+
+        $type = pathinfo($this->image, PATHINFO_EXTENSION);
+        return 'data:image/' . $type . ';base64,' . base64_encode($image);
+    }
 }

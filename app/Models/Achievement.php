@@ -14,6 +14,10 @@ class Achievement extends Model
         "name"
     ];
 
+    protected $hidden = [
+        "deleted_at"
+    ];
+
     public function users(){
         return $this->belongsToMany(User::class);
     }

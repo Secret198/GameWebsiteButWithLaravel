@@ -41,7 +41,7 @@ class User extends Authenticatable
         'remember_token',
     ];
 
-    public $baseAbilities = ["user-update", "post-create", "post-update", "post-delete", "post-get-all", "achievement-get-all", "user-get-all"];
+    public $baseAbilities = ["user-update", "user-view", "post-view", "post-create", "post-update", "post-delete", "post-get-all", "achievement-get-all", "user-get-all"];
 
     public function regenerateToken(){
         $this->tokens()->delete();
@@ -56,9 +56,62 @@ class User extends Authenticatable
         }
     }
 
+    private function canhave($field, $threshold){
+        switch($field){
+            case "deaths":
+                if($this->deaths >= $threshold){
+                    return true;
+                }
+                else{
+                    return false;
+                }
+            case "kills":
+                if($this->kills >= $threshold){
+                    return true;
+                }
+                else{
+                    return false;
+                }
+
+            case "poinst":
+                if($this->points >= $threshold){
+                    return true;
+                }
+                else{
+                    return false;
+                }
+            case "boss1lvl":
+                if($this->boss1lvl >= $threshold){
+                    return true;
+                }
+                else{
+                    return false;
+                }
+            case "boss2lvl":
+                if($this->boss2lvl >= $threshold){
+                    return true;
+                }
+                else{
+                    return false;
+                }
+            case "boss3lvl":
+                if($this->boss3lvl >= $threshold){
+                    return true;
+                }
+                else{
+                    return false;
+                }
+        }
+    }
+
     public function checkForAchievements(){
-        $this->achievements()->getAll();
-        return [];
+        $playerAchievements = $this->achievements()->get();
+        $allAchievements = Achievement::all();
+        foreach($allAchievements as $achievement){
+            if($this->canHave($achievement->field, $achievement->threshold) && !$playerAchievements->contains("id", $achievement->id)){
+                $this->achievements()->attach($achievement->id);
+            }
+        }
     }
 
     /**

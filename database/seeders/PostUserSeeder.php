@@ -23,7 +23,7 @@ class PostUserSeeder extends Seeder
         $bar = progress("Seeding Post User connect", $seedNum);
         
         for( $i = 0; $i < $seedNum; $i++ ){   
-            DB::table('user_achievement')->insert([
+            DB::table('achievement_user')->insert([
                 'user_id' => fake()->randomElement($users)['id'],
                 'achievement_id' => fake()->randomElement($achievements)['id'],
             ]);

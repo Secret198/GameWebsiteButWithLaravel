@@ -1,19 +1,16 @@
 Post create !
 Post modify !
-User get
-Post get
-Getting achievement and shit with pivot table
-
 
 if the post table is empty
 Validate images
-
 
 Customize error messages
 
 Abilities:
     Everyone:
         user-update
+        user-view
+        post-view
         post-create
         post-update
         post-delete
@@ -29,3 +26,4 @@ Abilities:
         achievement-create
         achievement-update
         achievement-delete
+        view-all

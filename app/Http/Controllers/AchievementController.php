@@ -52,4 +52,11 @@ class AchievementController extends Controller
             "message"=> "Achievement restored successfully"
         ]);
     }
+
+    public function getAllAchievements(){
+        $achievements = Achievement::all();
+        return response()->json([
+            "achievements" => $achievements
+        ]);
+    }
 }

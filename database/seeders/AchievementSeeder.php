@@ -17,7 +17,12 @@ class AchievementSeeder extends Seeder
         $seedNum = 10;
         $bar = progress("Seeding achievements", $seedNum);
         for($i = 0; $i < $seedNum; $i++){
-            $achievement = new Achievement(['name' => fake()->realText(10)]);
+            $achievement = new Achievement([
+                'name' => fake()->realText(10),
+                'field' => fake()->randomElement(["deaths", "kills", "points", "boss1lvl", "boss2lvl", "boss3lvl"]),
+                'threshold' => fake()->randomDigit(),
+                'description' => fake()->realText(10),
+            ]);
             $achievement->save();
             $bar->advance();
         }
