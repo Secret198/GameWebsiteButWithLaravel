@@ -55,6 +55,13 @@ class UserController extends Controller
         $email = $request->input("email");
         $password = $request->input("password");
 
+        $userAlreadyExists = User::where("email", $email)->first();
+        if($userAlreadyExists){
+            return response()->json([
+                "message" => "There is already and account with this email address"
+            ], 409);
+        }
+        
         $user = new User();
         $user->name = $name;
         $user->email = $email;
@@ -78,6 +85,8 @@ class UserController extends Controller
                 "privilege" => $user->privilege
             ]
         ]);
+       
+        
         
     }
 
@@ -282,6 +291,32 @@ class UserController extends Controller
 
         return response()->json([
             "posts" => $posts
+        ]);
+           
+    }
+
+    public function searchUsers(Request $request, $sortByStr, $sortDirStr, $search){
+        $sortBy = request()->query("sort_by", $sortByStr);
+        $sortDir = request()->query("sort_dir", $sortDirStr);
+        $accessToken = PersonalAccessToken::findToken($request->bearerToken())->abilities;
+        if(in_array("view-all", $accessToken) || in_array("*", $accessToken)){
+            $users = User::withTrashed()->select([
+                "id",
+                "name",
+                "created_at",
+                "updated_at",
+                "deleted_at"
+            ])->where("name", "LIKE", "%".$search."%")->orderBy($sortBy, $sortDir)->paginate(30);
+        }
+        else{
+            $users = User::select([
+                "id",
+                "name",
+            ])->where("name", "LIKE", "%".$search."%")->orderBy($sortBy, $sortDir)->paginate(30);
+        }
+
+        return response()->json([
+            "users" => $users
         ]);
            
     }

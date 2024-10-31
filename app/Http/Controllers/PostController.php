@@ -170,4 +170,32 @@ class PostController extends Controller
         ]);
            
     }
+
+    public function searchPosts(Request $request, $sortByStr, $sortDirStr, $search){
+        $sortBy = request()->query("sort_by", $sortByStr);
+        $sortDir = request()->query("sort_dir", $sortDirStr);
+        $accessToken = PersonalAccessToken::findToken($request->bearerToken())->abilities;
+        if(in_array("view-all", $accessToken) || in_array("*", $accessToken)){
+            $posts = Post::withTrashed()->select([
+                "id",
+                "post",
+                "created_at",
+                "updated_at",
+                "deleted_at"
+            ])->where("post", "LIKE", "%".$search."%")->orderBy($sortBy, $sortDir)->paginate(30);
+        }
+        else{
+            $posts = Post::select([
+                "id",
+                "post",
+                "created_at",
+                "updated_at"
+            ])->where("post", "LIKE", "%".$search."%")->orderBy($sortBy, $sortDir)->paginate(30);
+        }
+
+        return response()->json([
+            "posts" => $posts
+        ]);
+           
+    }
 }
