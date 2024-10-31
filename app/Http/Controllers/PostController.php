@@ -16,7 +16,7 @@ class PostController extends Controller
     public function create(Request $request){
         $request->validate([
             "post" => "required|min:10|max:65534",
-            "img" => "nullable", //validate the image somehow
+            "img" => "nullable|image|mimes:jpg,jpeg,png", //validate the image somehow
             "user_id" => "required|numeric",
         ]);
         $post = new Post();
