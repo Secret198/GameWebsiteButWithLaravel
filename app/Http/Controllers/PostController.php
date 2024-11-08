@@ -16,7 +16,7 @@ class PostController extends Controller
     public function create(Request $request){
         $request->validate([
             "post" => "required|min:10|max:65534",
-            "img" => "nullable|image|mimes:jpg,jpeg,png", //validate the image somehow
+            "image" => "nullable|is_image:jpeg,jpg,png|base64_image_size:500", 
             "user_id" => "required|numeric",
         ]);
         $post = new Post();
@@ -53,7 +53,7 @@ class PostController extends Controller
     public function update(Request $request, $id){
         $request->validate([
             "post" => "nullable|min:10|max:65534",
-            //"img" => "nullable", //same shit as before
+            "image" => "nullable|is_image:jpeg,jpg,png|base64_image_size:500", 
             "likes" => "nullable|numeric"
         ]);
 
