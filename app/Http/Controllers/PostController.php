@@ -17,12 +17,15 @@ class PostController extends Controller
         $request->validate([
             "post" => "required|min:10|max:65534",
             "image" => "nullable|is_image:jpeg,jpg,png|base64_image_size:500", 
-            "user_id" => "required|numeric",
+            // "user_id" => "required|numeric",
         ]);
+
+        $accessTokenUser = PersonalAccessToken::findToken($request->bearerToken())->tokenable;
+
         $post = new Post();
         $post->post = $request->post;
-        $user_id = User::findOrFail($request->user_id)->id;
-        $post->user_id = $user_id;
+        // $user_id = User::findOrFail($request->user_id)->id;
+        $post->user_id = $accessTokenUser->id;
         $post->likes = 0;
 
         $latestPost = Post::orderBy("id", "desc")->first()->id;

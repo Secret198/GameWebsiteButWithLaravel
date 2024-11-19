@@ -48,7 +48,7 @@ class UserController extends Controller
         $request->validate([
             "email" => "required|email",
             "name" => "required|min:3",
-            "password" => "required",
+            "password" => "required|min:8",
         ]);
 
         $name = $request->input("name");
