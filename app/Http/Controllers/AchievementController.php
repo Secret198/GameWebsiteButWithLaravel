@@ -10,27 +10,33 @@ class AchievementController extends Controller
     public function create(Request $request){
         $request->validate([
             "name" => "required",
+            "field" => "required",
+            "threshold" => "required|numeric"
         ]);
 
         $achievement = new Achievement();
         $achievement->name = $request->name;
+        $achievement->field = $request->field;
+        $achievement->threshold = $request->threshold;
         $achievement->save();
         return response()->json([
             "message"=> "Achievement created successfully",
             "achievement" => [
                 "id"=> $achievement->id,
-                "name"=> $achievement->name
+                "name"=> $achievement->name,
             ]
         ]);
     }
 
     public function update(Request $request, $id){
         $request->validate([
-            "name" => "required"
+            "name" => "nullable",
+            "field" => "nullable",
+            "threshold" => "nullable"
         ]);
 
         $achievement = Achievement::findOrFail($id);
-        $achievement->update(["name" => $request->name]);
+        $achievement->update($request->all());
 
         return response()->json([
             "message"=> "Achievement updated successfully",

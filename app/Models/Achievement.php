@@ -11,7 +11,9 @@ class Achievement extends Model
     public $timestamps = false;
 
     protected $fillable = [
-        "name"
+        "name",
+        "field",
+        "threshold"
     ];
 
     protected $hidden = [
