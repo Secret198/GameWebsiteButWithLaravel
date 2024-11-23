@@ -11,13 +11,15 @@ class AchievementController extends Controller
         $request->validate([
             "name" => "required",
             "field" => "required",
-            "threshold" => "required|numeric"
+            "threshold" => "required|numeric",
+            "description" => "required"
         ]);
 
         $achievement = new Achievement();
         $achievement->name = $request->name;
         $achievement->field = $request->field;
         $achievement->threshold = $request->threshold;
+        $achievement->description = $request->description;
         $achievement->save();
         return response()->json([
             "message"=> "Achievement created successfully",
@@ -32,7 +34,8 @@ class AchievementController extends Controller
         $request->validate([
             "name" => "nullable",
             "field" => "nullable",
-            "threshold" => "nullable"
+            "threshold" => "nullable",
+            "description" => "nullable"
         ]);
 
         $achievement = Achievement::findOrFail($id);
@@ -40,6 +43,14 @@ class AchievementController extends Controller
 
         return response()->json([
             "message"=> "Achievement updated successfully",
+        ]);
+    }
+
+    public function show(string $id){
+        $achievement = Achievement::findOrFail($id);
+
+        return response()->json([
+            "achievement" => $achievement
         ]);
     }
 

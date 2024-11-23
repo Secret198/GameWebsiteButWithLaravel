@@ -22,7 +22,7 @@ class DatabaseSeeder extends Seeder
             User::factory()->create([
                 'name' => 'Test User'.$i,
                 'email' => 'test'.($i+3).'@example.com',
-                'password' => Hash::make('password'.$i),
+                'password' => 'password'.$i,
                 'deaths' => fake()->numberBetween(1, 10),
                 'kills' => fake()->numberBetween(1, 10),
                 'points' => fake()->numberBetween(1, 10),

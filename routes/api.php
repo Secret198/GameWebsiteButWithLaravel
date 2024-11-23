@@ -35,3 +35,4 @@ Route::get("/achievement", [AchievementController::class, "getAllAchievements"])
 Route::patch("/achievement/{id}", [AchievementController::class, "update"])->middleware(["auth:sanctum","abilities:achievement-update"]);
 Route::delete("/achievement/{id}", [AchievementController::class, "delete"])->middleware(["auth:sanctum","abilities:achievement-delete"]);
 Route::delete("/achievement/restore/{id}", [AchievementController::class, "restore"])->middleware(["auth:sanctum","abilities:achievement-delete"]);
+Route::get("achievement/{id}", [AchievementController::class, "show"])->middleware(["auth:sanctum","abilities:achievement-update"]);

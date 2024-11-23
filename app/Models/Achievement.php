@@ -13,7 +13,8 @@ class Achievement extends Model
     protected $fillable = [
         "name",
         "field",
-        "threshold"
+        "threshold",
+        "description"
     ];
 
     protected $hidden = [
