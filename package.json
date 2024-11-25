@@ -13,5 +13,12 @@
         "postcss": "^8.4.47",
         "tailwindcss": "^3.4.13",
         "vite": "^5.0"
+    },
+    "apidoc": {
+        "name": "Roland-API",
+        "version": "0.1.0",
+        "description": "API of the Roland game and web application",
+        "title": "Roland-API",
+        "url": "http://localhost:8000/api"
     }
 }

@@ -13,6 +13,45 @@ use Laravel\Sanctum\Http\Middleware\CheckAbilities;
 
 class UserController extends Controller
 {
+
+    /**
+     * @api {post} /user/login User login
+     * @apiGroup User
+     * @apiHeaderExample {json} Request-headers:
+     * {
+     *  "Accept": "Application/json",
+     *  "Content-type": "Application/json"
+     * }
+     *  @apiError InvalidEmailOrPassword <code>email</code> or <code>password</code> of user was not found.
+     * @apiErrorExample {json} Error-Response:
+     *     HTTP/1.1 404 Not Found
+     *     {
+     *       "message": "Invalid email or password"
+     *     }
+     *    @apiPermission none
+     * @apiSuccess {String} message Information about the login.
+     * @apiSuccess {Object} user Data of the logged in user.
+     * @apiSuccess {Number} user.id   Users id.
+     * @apiSuccess {String} user.name User name.
+     * @apiSuccess {Number} user.deaths User's deaths.
+     * @apiSuccess {String} user.token User's access token.
+     * @apiSuccess {Number} user.privilege User's privilege level.
+     *    @apiSuccessExample {json} Success-Response:
+     *    HTTP/1.1 200 OK
+     *    {
+     *      "message": "Login successful",
+     *       "user": 
+     *          {
+     *             "id": 2,
+     *             "name": "Test User1",
+     *             "deaths": 4,
+     *             "token": "4|a7Dcj9AirLlhXHElDufzY1Wvo7epglPx7Qca9NZk3570b23a",
+     *             "privilege": 10
+     *          }
+     *    }
+     *    @apiVersion 0.1.0
+     */
+
     public function login(Request $request){
 
         $request->validate([
@@ -44,6 +83,45 @@ class UserController extends Controller
         ]);
     }
 
+   /**
+     * @api {post} /user/register User registration
+     * @apiGroup User
+     * @apiHeaderExample {json} Request-headers:
+     * {
+     *  "Accept": "Application/json",
+     *  "Content-type": "Application/json"
+     * }
+     * @apiError ThePasswordFieldMustBeAtLeast8Characters <code>password</code> must be at least 8 characters.
+     * @apiError ThereIsAlreadyAnAccountWithThisEmailAddress A user with this <code>email</code> already exists in the database.
+     * @apiErrorExample {json} Error-Response:
+     *     HTTP/1.1 404 Not Found
+     *     {
+     *           "message": "The password field must be at least 8 characters.",
+     *           "errors": {
+     *               "password": [
+     *                   "The password field must be at least 8 characters."
+     *               ]
+     *           }
+     *      }
+     * @apiPermission none
+     * @apiSuccess {String} message Information about the registration.
+     * @apiSuccess {Object} user Data of the newly registered user.
+     * @apiSuccess {Number} user.id   Users id.
+     * @apiSuccess {String} user.token User's access token.
+     * @apiSuccess {Number} user.privilege User's privilege level.
+     *    @apiSuccessExample {json} Success-Response:
+     *    HTTP/1.1 200 OK
+     *    {
+     *           "message": "User registered successfully",
+     *           "user": {
+     *               "id": 11,
+     *               "token": "5|wt46dJE69ABNtf7luWYGaIk8WE5P2JYoCILBzJcqadf29d0d",
+     *               "privilege": 1
+     *           }
+     *    }
+     *    @apiVersion 0.1.0
+     */
+
     public function register(Request $request){
         $request->validate([
             "email" => "required|email",
@@ -58,7 +136,7 @@ class UserController extends Controller
         $userAlreadyExists = User::where("email", $email)->first();
         if($userAlreadyExists){
             return response()->json([
-                "message" => "There is already and account with this email address"
+                "message" => "There is already an account with this email address"
             ], 409);
         }
         
@@ -90,6 +168,40 @@ class UserController extends Controller
         
     }
 
+    /**
+     * @api {patch} /user/update/privilege/:id Making other users admin
+     * @apiParam {Number} id Id of user to be made admin
+     * @apiGroup User
+     * @apiHeaderExample {json} Request-headers:
+     * {
+     *  "Accept": "Application/json",
+     *  "Content-type": "Application/json",
+     *  "Authorization: "Bearer <bearer-token>"
+     * }
+     * @apiError Unauthenticated User making the request is not logged in
+     * @apiError InvalidAbilityProvided Normal users are not authorized to make other users admin.
+     * @apiErrorExample {json} Error-Response:
+     *     HTTP/1.1 404 Not Found
+     *     {
+     *       "message": "Unauthenticated."
+     *     }
+     * @apiPermission admin
+     * @apiSuccess {String} message Information about the admin creation.
+     * @apiSuccess {Object} user Data of the user that was made admin.
+     * @apiSuccess {Number} user.id Users id.
+     * @apiSuccess {Number} user.privilege User's privilege level.
+     *    @apiSuccessExample {json} Success-Response:
+     *    HTTP/1.1 200 OK
+     *     {
+     *         "message": "Admin created successfully",
+     *         "user": {
+     *             "id": 9,
+     *             "privilege": 10
+     *         }
+     *     }
+     *    @apiVersion 0.1.0
+     */
+
     public function makeUserAdmin($id){
         $user = User::findOrFail($id);
 
@@ -107,26 +219,65 @@ class UserController extends Controller
             ]);
     }
 
-    // public function updateEveryone(Request $request, $id){
-    //     $request->validate([
-    //         "name" => "nullable|min:3",
-    //         "email" => "nullable|email"
-    //     ]);
-    //     $user = User::findOrFail($id);
-        
-    //     if($request->has("name")){
-    //         $user->update(["name" => $request->input("name")]);
-    //     }
-    //     if($request->has("email")){
-    //         $user->update(["email"=> $request->input("email")]);
-    //     }
-
-    //     return response()->json([
-    //         "id" => $user->id,
-    //         "name" => $user->name,
-    //         "email" => $user->email
-    //     ]);
-    // }
+   
+    /**
+     * @api {put} /user/update/:id User update
+     * @apiParam {Number} id Id of user to be updated
+     * @apiGroup User
+     * @apiHeaderExample {json} Request-headers:
+     * {
+     *  "Accept": "Application/json",
+     *  "Content-type": "Application/json",
+     *  "Authorization: "Bearer <bearer-token>"
+     * }
+     * @apiError TheNameFieldMustBeAtLeast3Characters. <code>name</code> field must be at least 3 characters.
+     * @apiError TheEmailFieldMustBeAValidEmailAddress. <code>email</code> field must be a valid email address.
+     * @apiError TheDeathsFieldMustBeANumber <code>deaths</code> field must be a number.
+     * @apiError TheKillsFieldMustBeANumber <code>kills</code> field must be a number.
+     * @apiError ThePointsFieldMustBeANumber <code>points</code> field must be a number.
+     * @apiError TheBoss1lvlFieldMustBeANumber <code>boss1lvl</code> field must be a number.
+     * @apiError TheBoss2lvlFieldMustBeANumber <code>boss2lvl</code> field must be a number.
+     * @apiError TheBoss3lvlFieldMustBeANumber <code>boss3lvl</code> field must be a number.
+     * @apiErrorExample {json} Error-Response:
+     *     HTTP/1.1 404 Not Found
+     *       {
+     *           "message": "The name field must be at least 3 characters.",
+     *           "errors": {
+     *               "name": [
+     *                   "The name field must be at least 3 characters."
+     *               ]
+     *           }
+     *       }
+     * @apiPermission normal user
+     * @apiSuccess {String} message Information about the update.
+     * @apiSuccess {Object} user Data of the updated user.
+     * @apiSuccess {Number} user.id   Users id.
+     * @apiSuccess {Number} user.name User name.
+     * @apiSuccess {Number} user.email User email.
+     * @apiSuccess {Number} user.deaths User deaths.
+     * @apiSuccess {Number} user.kills User kills.
+     * @apiSuccess {Number} user.points User points.
+     * @apiSuccess {Number} user.boss1lvl User boss 1 level.
+     * @apiSuccess {Number} user.boss2lvl User boss 2 level.
+     * @apiSuccess {Number} user.boss3lvl User boss 3 level.
+     * @apiSuccessExample {json} Success-Response:
+     *    HTTP/1.1 200 OK
+     *       {
+     *       "message": "User updated successfully",
+     *          "user": {
+     *              "id": 1,
+     *              "name": "This is epic",
+     *              "email": "test3@yourmom.com",
+     *              "deaths": 69,
+     *              "kills": 4,
+     *              "points": 5,
+     *              "boss1lvl": 4,
+     *              "boss2lvl": 1,
+     *              "boss3lvl": 7
+     *          }
+     *       }
+     *    @apiVersion 0.1.0
+     */
 
     public function update(Request $request, $id){
         $request->validate([
@@ -168,6 +319,33 @@ class UserController extends Controller
         ]);
     }
 
+    /**
+     * @api {delete} /user/:id Delete user
+     * @apiParam {Number} id Id of user to be deleted
+     * @apiGroup User
+     * @apiHeaderExample {json} Request-headers:
+     * {
+     *  "Accept": "Application/json",
+     *  "Content-type": "Application/json",
+     *  "Authorization: "Bearer <bearer-token>"
+     * }
+     * @apiError Unauthenticated User making the request is not logged in
+     * @apiError InvalidAbilityProvided Normal users are not authorized to delete users.
+     * @apiErrorExample {json} Error-Response:
+     *     HTTP/1.1 404 Not Found
+     *     {
+     *       "message": "Unauthenticated."
+     *     }
+     * @apiPermission admin
+     * @apiSuccess {String} message Information about the user deletion.
+     *    @apiSuccessExample {json} Success-Response:
+     *    HTTP/1.1 200 OK
+     *     {
+     *         "message": "User deleted successfully",
+     *     }
+     *    @apiVersion 0.1.0
+     */
+
     public function delete($id){
         $user = User::findOrFail($id);        
         $user->delete();
@@ -175,6 +353,39 @@ class UserController extends Controller
             "message" => "User deleted successfully"
         ]);
     }
+
+    /**
+     * @api {delete} /user/restore/:id Restore user
+     * @apiParam {Number} id Id of user to be restored
+     * @apiGroup User
+     * @apiHeaderExample {json} Request-headers:
+     * {
+     *  "Accept": "Application/json",
+     *  "Content-type": "Application/json",
+     *  "Authorization: "Bearer <bearer-token>"
+     * }
+     * @apiError Unauthenticated User making the request is not logged in
+     * @apiError InvalidAbilityProvided Normal users are not authorized to restore deleted users.
+     * @apiErrorExample {json} Error-Response:
+     *     HTTP/1.1 404 Not Found
+     *     {
+     *       "message": "Unauthenticated."
+     *     }
+     * @apiPermission admin
+     * @apiSuccess {String} message Information about the user restoration.
+     * @apiSuccess {Object} user Data of restored user
+     * @apiSuccess {Number} user.id Id of restored user
+     * @apiSuccess {Number} user.privilege Privilege of restored user
+     *    @apiSuccessExample {json} Success-Response:
+     *   {
+     *       "message": "User restored successfully",
+     *       "user": {
+     *           "id": 6,
+     *           "privilege": 1
+     *       }
+     *   }
+     *    @apiVersion 0.1.0
+     */
 
     public function restore($id){
         $user = User::withTrashed()->findOrFail($id);
