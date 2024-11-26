@@ -16,7 +16,7 @@ Route::patch("user/update/privilege/{id}", [UserController::class,"makeUserAdmin
 Route::delete("/user/{id}", [UserController::class, "delete"])->middleware(["auth:sanctum", "abilities:user-delete"]);
 Route::delete("/user/restore/{id}", [UserController::class, "restore"])->middleware(["auth:sanctum", "abilities:user-delete"]);
 Route::get("/user/{id}", [UserController::class, "getUserData"])->middleware(["auth:sanctum", "abilities:user-view"]);
-Route::get("/user/{sortByStr}/{sortDirStr}", [UserController::class, "getAllUsers"])->middleware(["auth:sanctum", "abilities:user-view"]);
+Route::get("/user/all/{sortByStr}/{sortDirStr}", [UserController::class, "getAllUsers"])->middleware(["auth:sanctum", "abilities:user-view"]);
 Route::get("/user/{sortByStr}/{sortDirStr}", [UserController::class, "getOwnPosts"])->middleware(["auth:sanctum", "abilities:user-view"]);
 Route::get("/user/search/{sortByStr}/{sortDirStr}/{search}", [UserController::class, "searchUsers"])->middleware(["auth:sanctum", "abilities:user-view"]);
 

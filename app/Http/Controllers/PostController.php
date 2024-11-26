@@ -13,6 +13,45 @@ use Illuminate\Support\Facades\Hash;
 
 class PostController extends Controller
 {
+
+    /**
+     * @api {post} /post Post registration
+     * @apiGroup Post
+     * @apiUse HeadersWithToken
+     * @apiBody {String{min:10 - max:65534}} post Text of the new post
+     * @apiBody {String{max: 500KB}} image Base64 encoded image for the new post
+     * @apiError ThePostFieldMustBeAtLeast10Characters <code>post</code> must be at least 10 characters.
+     * @apiError ThePostFieldMustNotBeGreaterThan65534Characters. <code>post</code> must be below 65534 characters.
+     * @apiError TheImageMustBeOfTypeJpeg,jpg,png <code>image</code> must be of type jpeg, jpg, png
+     * @apiErrorExample {json} Error-Response:
+     *     HTTP/1.1 422 Unprocessable Content
+     *       {
+     *           "message": "The post field must be at least 10 characters.",
+     *           "errors": {
+     *               "post": [
+     *                   "The post field must be at least 10 characters."
+     *               ]
+     *           }
+     *       }
+     * @apiPermission none
+     * @apiSuccess {String} message Information about the registration.
+     * @apiSuccess {Object} user Data of the newly registered user.
+     * @apiSuccess {Number} user.id   Users <code>id</code>.
+     * @apiSuccess {String} user.token User's access <code>token</code>.
+     * @apiSuccess {Number} user.privilege User's <code>privilege</code> level.
+     *    @apiSuccessExample {json} Success-Response:
+     *    HTTP/1.1 200 OK
+     *    {
+     *           "message": "User registered successfully",
+     *           "user": {
+     *               "id": 11,
+     *               "token": "5|wt46dJE69ABNtf7luWYGaIk8WE5P2JYoCILBzJcqadf29d0d",
+     *               "privilege": 1
+     *           }
+     *    }
+     *    @apiVersion 0.1.0
+     */
+
     public function create(Request $request){
         $request->validate([
             "post" => "required|min:10|max:65534",

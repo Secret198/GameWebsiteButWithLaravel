@@ -15,6 +15,16 @@ class UserController extends Controller
 {
 
     /**
+     * @apiDefine HeadersWithToken
+     * @apiHeaderExample {json} Request-headers:
+     * {
+     *  "Accept": "Application/json",
+     *  "Content-type": "Application/json",
+     *  "Authorization: "Bearer <bearer-token>"
+     * } 
+     */
+
+    /**
      * @api {post} /user/login User login
      * @apiGroup User
      * @apiHeaderExample {json} Request-headers:
@@ -22,6 +32,8 @@ class UserController extends Controller
      *  "Accept": "Application/json",
      *  "Content-type": "Application/json"
      * }
+     * @apiBody {Email} email User's email address
+     * @apiBody {String} password User's password
      *  @apiError InvalidEmailOrPassword <code>email</code> or <code>password</code> of user was not found.
      * @apiErrorExample {json} Error-Response:
      *     HTTP/1.1 404 Not Found
@@ -31,11 +43,11 @@ class UserController extends Controller
      *    @apiPermission none
      * @apiSuccess {String} message Information about the login.
      * @apiSuccess {Object} user Data of the logged in user.
-     * @apiSuccess {Number} user.id   Users id.
-     * @apiSuccess {String} user.name User name.
-     * @apiSuccess {Number} user.deaths User's deaths.
-     * @apiSuccess {String} user.token User's access token.
-     * @apiSuccess {Number} user.privilege User's privilege level.
+     * @apiSuccess {Number} user.id   User's <code>id</code>.
+     * @apiSuccess {String} user.name User's <code>name</code>.
+     * @apiSuccess {Number} user.deaths User's <code>deaths</code>.
+     * @apiSuccess {String} user.token User's access <code>token</code>.
+     * @apiSuccess {Number} user.privilege User's <code>privilege</code> level.
      *    @apiSuccessExample {json} Success-Response:
      *    HTTP/1.1 200 OK
      *    {
@@ -91,10 +103,13 @@ class UserController extends Controller
      *  "Accept": "Application/json",
      *  "Content-type": "Application/json"
      * }
+     * @apiBody {Email} email New user's email address
+     * @apiBody {String{min: 3}} name New user's user <code>name</code>
+     * @apiBody {String{min: 8}} password New user's <code>password</code>
      * @apiError ThePasswordFieldMustBeAtLeast8Characters <code>password</code> must be at least 8 characters.
      * @apiError ThereIsAlreadyAnAccountWithThisEmailAddress A user with this <code>email</code> already exists in the database.
      * @apiErrorExample {json} Error-Response:
-     *     HTTP/1.1 404 Not Found
+     *     HTTP/1.1 422 Unprocessable Content
      *     {
      *           "message": "The password field must be at least 8 characters.",
      *           "errors": {
@@ -106,9 +121,9 @@ class UserController extends Controller
      * @apiPermission none
      * @apiSuccess {String} message Information about the registration.
      * @apiSuccess {Object} user Data of the newly registered user.
-     * @apiSuccess {Number} user.id   Users id.
-     * @apiSuccess {String} user.token User's access token.
-     * @apiSuccess {Number} user.privilege User's privilege level.
+     * @apiSuccess {Number} user.id   Users <code>id</code>.
+     * @apiSuccess {String} user.token User's access <code>token</code>.
+     * @apiSuccess {Number} user.privilege User's <code>privilege</code> level.
      *    @apiSuccessExample {json} Success-Response:
      *    HTTP/1.1 200 OK
      *    {
@@ -172,24 +187,19 @@ class UserController extends Controller
      * @api {patch} /user/update/privilege/:id Making other users admin
      * @apiParam {Number} id Id of user to be made admin
      * @apiGroup User
-     * @apiHeaderExample {json} Request-headers:
-     * {
-     *  "Accept": "Application/json",
-     *  "Content-type": "Application/json",
-     *  "Authorization: "Bearer <bearer-token>"
-     * }
-     * @apiError Unauthenticated User making the request is not logged in
+     * @apiUse HeadersWithToken
+     * @apiError Unauthenticated User making the request is not logged in or has outdated access token.
      * @apiError InvalidAbilityProvided Normal users are not authorized to make other users admin.
      * @apiErrorExample {json} Error-Response:
-     *     HTTP/1.1 404 Not Found
+     *     HTTP/1.1 401 Unathorized
      *     {
      *       "message": "Unauthenticated."
      *     }
      * @apiPermission admin
      * @apiSuccess {String} message Information about the admin creation.
      * @apiSuccess {Object} user Data of the user that was made admin.
-     * @apiSuccess {Number} user.id Users id.
-     * @apiSuccess {Number} user.privilege User's privilege level.
+     * @apiSuccess {Number} user.id Users <code>id</code>.
+     * @apiSuccess {Number} user.privilege User's new <code>privilege</code> level.
      *    @apiSuccessExample {json} Success-Response:
      *    HTTP/1.1 200 OK
      *     {
@@ -224,12 +234,16 @@ class UserController extends Controller
      * @api {put} /user/update/:id User update
      * @apiParam {Number} id Id of user to be updated
      * @apiGroup User
-     * @apiHeaderExample {json} Request-headers:
-     * {
-     *  "Accept": "Application/json",
-     *  "Content-type": "Application/json",
-     *  "Authorization: "Bearer <bearer-token>"
-     * }
+     * @apiUse HeadersWithToken
+     * @apiBody {String{min:3}} [name] New name of user
+     * @apiBody {Email} [email] New email of user
+     * @apiBody {Number} [deaths] New number of <code>deaths</code> of the user
+     * @apiBody {Number} [kills] New number of <code>kills</code> of the user
+     * @apiBody {Number} [points] New number of <code>points</code> of user
+     * @apiBody {Number} [boss1lvl] New <code>boss1lvl</code> of user
+     * @apiBody {Number} [boss2lvl] New <code>boss2lvl</code> of user
+     * @apiBody {Number} [boss3lvl] New <code>boss3lvl</code> of user
+     * @apiError Unauthenticated User making the request is not logged in or has outdated access token.
      * @apiError TheNameFieldMustBeAtLeast3Characters. <code>name</code> field must be at least 3 characters.
      * @apiError TheEmailFieldMustBeAValidEmailAddress. <code>email</code> field must be a valid email address.
      * @apiError TheDeathsFieldMustBeANumber <code>deaths</code> field must be a number.
@@ -239,7 +253,7 @@ class UserController extends Controller
      * @apiError TheBoss2lvlFieldMustBeANumber <code>boss2lvl</code> field must be a number.
      * @apiError TheBoss3lvlFieldMustBeANumber <code>boss3lvl</code> field must be a number.
      * @apiErrorExample {json} Error-Response:
-     *     HTTP/1.1 404 Not Found
+     *     HTTP/1.1 422 Unprocessable Content
      *       {
      *           "message": "The name field must be at least 3 characters.",
      *           "errors": {
@@ -251,24 +265,24 @@ class UserController extends Controller
      * @apiPermission normal user
      * @apiSuccess {String} message Information about the update.
      * @apiSuccess {Object} user Data of the updated user.
-     * @apiSuccess {Number} user.id   Users id.
-     * @apiSuccess {Number} user.name User name.
-     * @apiSuccess {Number} user.email User email.
-     * @apiSuccess {Number} user.deaths User deaths.
-     * @apiSuccess {Number} user.kills User kills.
-     * @apiSuccess {Number} user.points User points.
-     * @apiSuccess {Number} user.boss1lvl User boss 1 level.
-     * @apiSuccess {Number} user.boss2lvl User boss 2 level.
-     * @apiSuccess {Number} user.boss3lvl User boss 3 level.
+     * @apiSuccess {Number} user.id   User's <code>id</code>.
+     * @apiSuccess {Number} user.name User's <code>name</code>.
+     * @apiSuccess {Number} user.email User's <code>email</code>.
+     * @apiSuccess {Number} user.deaths User's <code>deaths</code>.
+     * @apiSuccess {Number} user.kills User's <code>kills</code>.
+     * @apiSuccess {Number} user.points User's <code>points</code>.
+     * @apiSuccess {Number} user.boss1lvl User's <code>boss1lvl</code>.
+     * @apiSuccess {Number} user.boss2lvl User's <code>boss2lvl</code>.
+     * @apiSuccess {Number} user.boss3lvl User's <code>boss3lv</code>l.
      * @apiSuccessExample {json} Success-Response:
      *    HTTP/1.1 200 OK
      *       {
      *       "message": "User updated successfully",
      *          "user": {
      *              "id": 1,
-     *              "name": "This is epic",
-     *              "email": "test3@yourmom.com",
-     *              "deaths": 69,
+     *              "name": "New name",
+     *              "email": "test3@newemail.com",
+     *              "deaths": 619,
      *              "kills": 4,
      *              "points": 5,
      *              "boss1lvl": 4,
@@ -323,16 +337,11 @@ class UserController extends Controller
      * @api {delete} /user/:id Delete user
      * @apiParam {Number} id Id of user to be deleted
      * @apiGroup User
-     * @apiHeaderExample {json} Request-headers:
-     * {
-     *  "Accept": "Application/json",
-     *  "Content-type": "Application/json",
-     *  "Authorization: "Bearer <bearer-token>"
-     * }
-     * @apiError Unauthenticated User making the request is not logged in
+     * @apiUse HeadersWithToken
+     * @apiError Unauthenticated User making the request is not logged in or has outdated access token.
      * @apiError InvalidAbilityProvided Normal users are not authorized to delete users.
      * @apiErrorExample {json} Error-Response:
-     *     HTTP/1.1 404 Not Found
+     *     HTTP/1.1 401 Unathorized
      *     {
      *       "message": "Unauthenticated."
      *     }
@@ -358,16 +367,11 @@ class UserController extends Controller
      * @api {delete} /user/restore/:id Restore user
      * @apiParam {Number} id Id of user to be restored
      * @apiGroup User
-     * @apiHeaderExample {json} Request-headers:
-     * {
-     *  "Accept": "Application/json",
-     *  "Content-type": "Application/json",
-     *  "Authorization: "Bearer <bearer-token>"
-     * }
-     * @apiError Unauthenticated User making the request is not logged in
+     * @apiUse HeadersWithToken
+     * @apiError Unauthenticated User making the request is not logged in or has outdated access token.
      * @apiError InvalidAbilityProvided Normal users are not authorized to restore deleted users.
      * @apiErrorExample {json} Error-Response:
-     *     HTTP/1.1 404 Not Found
+     *     HTTP/1.1 401 Unathorized
      *     {
      *       "message": "Unauthenticated."
      *     }
@@ -375,7 +379,7 @@ class UserController extends Controller
      * @apiSuccess {String} message Information about the user restoration.
      * @apiSuccess {Object} user Data of restored user
      * @apiSuccess {Number} user.id Id of restored user
-     * @apiSuccess {Number} user.privilege Privilege of restored user
+     * @apiSuccess {Number} user.privilege <code>privilege</code> of restored user
      *    @apiSuccessExample {json} Success-Response:
      *   {
      *       "message": "User restored successfully",
@@ -404,6 +408,75 @@ class UserController extends Controller
             ]
         ]);
     }
+
+    /**
+     * @api {get} /user/:id Get user data
+     * @apiParam {Number} id Id of user to be queried
+     * @apiGroup User
+     * @apiUse HeadersWithToken
+     * @apiError Unauthenticated. User making the request is not logged in or has outdated access token.
+     * @apiErrorExample {json} Error-Response:
+     *     HTTP/1.1 401 Unathorized
+     *       {
+     *           "message": "Unauthenticated,"
+     *       }
+     * @apiPermission normal user
+     * @apiSuccess (Success-Normal user) {String} message Information about the request.
+     * @apiSuccess (Success-Normal user) {Object} user Data of the requested user.
+     * @apiSuccess (Success-Normal user) {Number} user.id   User's <code>id</code>.
+     * @apiSuccess (Success-Normal user) {Number} user.name User's <code>name</code>.
+     * @apiSuccess (Success-Normal user) {Number} user.email User's <code>email</code>.
+     * @apiSuccess (Success-Normal user) {Number} user.deaths User's <code>deaths</code>.
+     * @apiSuccess (Success-Normal user) {Number} user.kills User's <code>kills</code>.
+     * @apiSuccess (Success-Normal user) {Number} user.points User's <code>points</code>.
+     * @apiSuccess (Success-Normal user) {Number} user.boss1lvl User's <code>boss1lvl</code>.
+     * @apiSuccess (Success-Normal user) {Number} user.boss2lvl User's <code>boss2lvl</code>.
+     * @apiSuccess (Success-Normal user) {Number} user.boss3lvl User's <code>boss3lvl</code>.
+     * @apiSuccess (Success-Normal user) {Date} user.created_at When the user was created.
+     * @apiSuccess (Success-Normal user) {Object} achievements Achievements of the selected user.
+     * @apiSuccess (Success-Normal user) {Number} achievements.id Achievement <code>id</code>.
+     * @apiSuccess (Success-Normal user) {String} achievements.name Achievement <code>name</code>.
+     * @apiSuccess (Success-Normal user) {String} achievements.description Achievement <code>description</code>.
+     * @apiSuccess (Success-Normal user) {String} achievements.field Column name in the user table.
+     * @apiSuccess (Success-Normal user) {Number} achievements.threshold Threshold of the achievement.
+     * @apiSuccess (Success-Normal user) {Object} achievements.pivot Data from the pivot table.
+     * @apiSuccess (Success-Normal user) {Number} achievements.pivot.user_id User id from the pivot table.
+     * @apiSuccess (Success-Normal user) {Number} achievements.pivot.achievement_id Achievement id from the pivot table.
+     * 
+     * @apiSuccess (Success-Admin user (fields returned in addition to the normal user fields)) {Object} user Data of the requested user
+     * @apiSuccess (Success-Admin user (fields returned in addition to the normal user fields)) {Date} user.deleted_at When the user was deleted
+     * @apiSuccess (Success-Admin user (fields returned in addition to the normal user fields)) {Date} user.modified_at When the user was last modified
+     * @apiSuccessExample {json} Success-Response:
+     *    HTTP/1.1 200 OK
+     *       {
+     *           "user": {
+     *               "id": 5,
+     *               "name": "Test User4",
+     *               "email": "test7@example.com",
+     *               "deaths": 5,
+     *               "kills": 6,
+     *               "points": 5,
+     *               "boss1lvl": 9,
+     *               "boss2lvl": 7,
+     *               "boss3lvl": 10,
+     *               "created_at": "2024-11-05T11:49:11.000000Z"
+     *           },
+     *           "achievements": [
+     *               {
+     *                   "id": 3,
+     *                   "name": "But, now.",
+     *                   "description": "And will.",
+     *                   "field": "boss3lvl",
+     *                   "threshold": 5,
+     *                   "pivot": {
+     *                       "user_id": 5,
+     *                       "achievement_id": 3
+     *                   }
+     *               }
+     *           ]
+     *       }
+     *    @apiVersion 0.1.0
+     */
 
     public function getUserData(Request $request, $id){
         $accessToken = PersonalAccessToken::findToken($request->bearerToken())->abilities;
@@ -448,6 +521,109 @@ class UserController extends Controller
         ]);
     }
 
+    /**
+     * @api {get} /user/all/:sort_by/:sort_dir Get all users
+     * @apiParam {String} sort_by Field to be used to order the posts by
+     * @apiParam {String} sort_dir Order direction for the posts
+     * @apiGroup User
+     * @apiUse HeadersWithToken
+     * @apiError Unauthenticated. User making the request is not logged in or has outdated access token.
+     * @apiErrorExample {json} Error-Response:
+     *     HTTP/1.1 401 Unathorized
+     *       {
+     *           "message": "Unauthenticated,"
+     *       }
+     * @apiPermission normal user
+     * @apiSuccess (Success-Normal user) {Object} users Data of all the users.
+     * @apiSuccess (Success-Normal user) {Number} users.current_page Current page of the pagination.
+     * @apiSuccess (Success-Normal user) {Object} users.data Data of the returnded users.
+     * @apiSuccess (Success-Normal user) {Number} users.data.id User <code>id</code>.
+     * @apiSuccess (Success-Normal user) {String} users.data.name User <code>name</code>.
+     * @apiSuccess (Success-Normal user) {Number} users.first_page_url I'm sure it does something.
+     * 
+     * @apiSuccess (Success-Admin user (fields returned in addition to the normal user fields)) {Object} user.data Data of the requested user
+     * @apiSuccess (Success-Admin user (fields returned in addition to the normal user fields)) {Date} user.data.deleted_at When the user was deleted
+     * @apiSuccess (Success-Admin user (fields returned in addition to the normal user fields)) {Date} user.data.modified_at When the user was last modified
+     * @apiSuccess (Success-Admin user (fields returned in addition to the normal user fields)) {Date} user.data.created_at When the user was created
+     * @apiSuccessExample {json} Success-Response:
+     *    HTTP/1.1 200 OK
+     *       {
+     *           "users": {
+     *               "current_page": 1,
+     *               "data": [
+     *                   {
+     *                       "id": 1,
+     *                       "name": "Test User0"
+     *                   },
+     *                   {
+     *                       "id": 2,
+     *                       "name": "Test User1"
+     *                   },
+     *                   {
+     *                       "id": 3,
+     *                       "name": "Test User2"
+     *                   },
+     *                   {
+     *                       "id": 4,
+     *                       "name": "Test User3"
+     *                   },
+     *                   {
+     *                       "id": 5,
+     *                       "name": "Test User4"
+     *                   },
+     *                   {
+     *                       "id": 6,
+     *                       "name": "Test User5"
+     *                   },
+     *                   {
+     *                       "id": 7,
+     *                       "name": "Test User6"
+     *                   },
+     *                   {
+     *                       "id": 8,
+     *                       "name": "Test User7"
+     *                   },
+     *                   {
+     *                       "id": 9,
+     *                       "name": "Test User8"
+     *                   },
+     *                   {
+     *                       "id": 10,
+     *                       "name": "Test User9"
+     *                   }
+     *               ],
+     *               "first_page_url": "http://localhost:8000/api/user/all/name/asc?page=1",
+     *               "from": 1,
+     *               "last_page": 1,
+     *               "last_page_url": "http://localhost:8000/api/user/all/name/asc?page=1",
+     *               "links": [
+     *                   {
+     *                       "url": null,
+     *                       "label": "&laquo; Previous",
+     *                       "active": false
+     *                   },
+     *                   {
+     *                       "url": "http://localhost:8000/api/user/all/name/asc?page=1",
+     *                       "label": "1",
+     *                       "active": true
+     *                   },
+     *                   {
+     *                       "url": null,
+     *                       "label": "Next &raquo;",
+     *                       "active": false
+     *                   }
+     *               ],
+     *               "next_page_url": null,
+     *               "path": "http://localhost:8000/api/user/all/name/asc",
+     *               "per_page": 30,
+     *               "prev_page_url": null,
+     *               "to": 10,
+     *               "total": 10
+     *           }
+     *       }
+     *    @apiVersion 0.1.0
+     */
+
     public function getAllUsers(Request $request, $sortByStr, $sortDirStr){
         $sortBy = request()->query("sort_by", $sortByStr);
         $sortDir = request()->query("sort_dir", $sortDirStr);
@@ -473,6 +649,92 @@ class UserController extends Controller
         ]);
            
     }
+
+    /**
+     * @api {get} /user/:sort_by/:sort_dir Get user's own posts
+     * @apiParam {String} sort_by Field to be used to order the posts by
+     * @apiParam {String} sort_dir Order direction for the posts
+     * @apiGroup User
+     * @apiUse HeadersWithToken
+     * @apiError Unauthenticated. User making the request is not logged in or has outdated access token.
+     * @apiErrorExample {json} Error-Response:
+     *     HTTP/1.1 401 Unathorized
+     *       {
+     *           "message": "Unauthenticated,"
+     *       }
+     * @apiPermission normal user
+     * @apiSuccess (Success-Normal user) {Object} posts Data of all the posts of the logged in user.
+     * @apiSuccess (Success-Normal user) {Number} posts.current_page Current page of the pagination.
+     * @apiSuccess (Success-Normal user) {Object} posts.data Data of the returnded posts.
+     * @apiSuccess (Success-Normal user) {Number} posts.data.id Post <code>id</code>.
+     * @apiSuccess (Success-Normal user) {String} posts.data.post Text of the post.
+     * @apiSuccess (Success-Normal user) {Date} posts.data.created_at When the post was created.
+     * @apiSuccess (Success-Normal user) {Date} posts.data.updated_at When the post was last updated.
+     * 
+     * @apiSuccess (Success-Admin user (fields returned in addition to the normal user fields)) {Object} data Data of all the posts of the logged in user user.
+     * @apiSuccess (Success-Admin user (fields returned in addition to the normal user fields)) {Date} posts.data.deleted_at When the post was deleted
+     * @apiSuccessExample {json} Success-Response:
+     *    HTTP/1.1 200 OK
+     *       {
+     *           "posts": {
+     *               "current_page": 1,
+     *               "data": [
+     *                   {
+     *                       "id": 1,
+     *                       "post": "Alice desperately: 'he's perfectly idiotic!' And.",
+     *                       "created_at": "2024-11-05T11:49:15.000000Z",
+     *                       "updated_at": "2024-11-05T11:49:15.000000Z",
+     *                   },
+     *                   {
+     *                       "id": 2,
+     *                       "post": "These were the verses the White Rabbit, who said.",
+     *                       "created_at": "2024-11-05T11:49:15.000000Z",
+     *                       "updated_at": "2024-11-05T11:49:15.000000Z",
+     *                   },
+     *                   {
+     *                       "id": 3,
+     *                       "post": "Alice's side as she fell past it. 'Well!'.",
+     *                       "created_at": "2024-11-05T11:49:15.000000Z",
+     *                       "updated_at": "2024-11-05T11:49:15.000000Z",
+     *                   },
+     *                   {
+     *                       "id": 10,
+     *                       "post": "Alice had no pictures or conversations in it.",
+     *                       "created_at": "2024-11-05T11:49:15.000000Z",
+     *                       "updated_at": "2024-11-05T11:49:15.000000Z",
+     *                   }
+     *               ],
+     *               "first_page_url": "http://localhost:8000/api/user/id/asc?page=1",
+     *               "from": 1,
+     *               "last_page": 1,
+     *               "last_page_url": "http://localhost:8000/api/user/id/asc?page=1",
+     *               "links": [
+     *                   {
+     *                       "url": null,
+     *                       "label": "&laquo; Previous",
+     *                       "active": false
+     *                   },
+     *                   {
+     *                       "url": "http://localhost:8000/api/user/id/asc?page=1",
+     *                       "label": "1",
+     *                       "active": true
+     *                   },
+     *                   {
+     *                       "url": null,
+     *                       "label": "Next &raquo;",
+     *                       "active": false
+     *                   }
+     *               ],
+     *               "next_page_url": null,
+     *               "path": "http://localhost:8000/api/user/id/asc",
+     *               "per_page": 30,
+     *               "prev_page_url": null,
+     *               "to": 4,
+     *               "total": 4
+     *           }
+     *       }
+     *    @apiVersion 0.1.0
+     */
 
     public function getOwnPosts(Request $request, $sortByStr, $sortDirStr){
         $token = PersonalAccessToken::findToken($request->bearerToken());
@@ -505,6 +767,110 @@ class UserController extends Controller
         ]);
            
     }
+
+    /**
+     * @api {get} /user/search/:sort_by/:sort_dir/:search_for Search for users
+     * @apiParam {String} sort_by Field to be used to order the posts by
+     * @apiParam {String} sort_dir Order direction for the posts
+     * @apiParam {String} search_for Keyword to search for in user names
+     * @apiGroup User
+     * @apiUse HeadersWithToken
+     * @apiError Unauthenticated. User making the request is not logged in or has outdated access token.
+     * @apiErrorExample {json} Error-Response:
+     *     HTTP/1.1 401 Unathorized
+     *       {
+     *           "message": "Unauthenticated,"
+     *       }
+     * @apiPermission normal user
+     * @apiSuccess (Success-Normal user) {Object} users Data of all the users.
+     * @apiSuccess (Success-Normal user) {Number} users.current_page Current page of the pagination.
+     * @apiSuccess (Success-Normal user) {Object} users.data Data of the returnded users.
+     * @apiSuccess (Success-Normal user) {Number} users.data.id User <code>id</code>.
+     * @apiSuccess (Success-Normal user) {String} users.data.name User <code>name</code>.
+     * @apiSuccess (Success-Normal user) {Number} users.first_page_url I'm sure it does something.
+     * 
+     * @apiSuccess (Success-Admin user (fields returned in addition to the normal user fields)) {Object} user.data Data of the requested user
+     * @apiSuccess (Success-Admin user (fields returned in addition to the normal user fields)) {Date} user.data.deleted_at When the user was deleted
+     * @apiSuccess (Success-Admin user (fields returned in addition to the normal user fields)) {Date} user.data.modified_at When the user was last modified
+     * @apiSuccess (Success-Admin user (fields returned in addition to the normal user fields)) {Date} user.data.created_at When the user was created
+     * @apiSuccessExample {json} Success-Response:
+     *    HTTP/1.1 200 OK
+     *       {
+     *           "users": {
+     *               "current_page": 1,
+     *               "data": [
+     *                   {
+     *                       "id": 9,
+     *                       "name": "Test User8"
+     *                   },
+     *                   {
+     *                       "id": 10,
+     *                       "name": "Test User9"
+     *                   },
+     *                   {
+     *                       "id": 8,
+     *                       "name": "Test User7"
+     *                   },
+     *                   {
+     *                       "id": 7,
+     *                       "name": "Test User6"
+     *                   },
+     *                   {
+     *                       "id": 5,
+     *                       "name": "Test User4"
+     *                   },
+     *                   {
+     *                       "id": 6,
+     *                       "name": "Test User5"
+     *                   },
+     *                   {
+     *                       "id": 4,
+     *                       "name": "Test User3"
+     *                   },
+     *                   {
+     *                       "id": 3,
+     *                       "name": "Test User2"
+     *                   },
+     *                   {
+     *                       "id": 2,
+     *                       "name": "Test User1"
+     *                   },
+     *                   {
+     *                       "id": 1,
+     *                       "name": "Test User0"
+     *                   }
+     *               ],
+     *               "first_page_url": "http://localhost:8000/api/user/search/created_at/desc/test?page=1",
+     *               "from": 1,
+     *               "last_page": 1,
+     *               "last_page_url": "http://localhost:8000/api/user/search/created_at/desc/test?page=1",
+     *               "links": [
+     *                   {
+     *                       "url": null,
+     *                       "label": "&laquo; Previous",
+     *                       "active": false
+     *                   },
+     *                   {
+     *                       "url": "http://localhost:8000/api/user/search/created_at/desc/test?page=1",
+     *                       "label": "1",
+     *                       "active": true
+     *                   },
+     *                   {
+     *                       "url": null,
+     *                       "label": "Next &raquo;",
+     *                       "active": false
+     *                   }
+     *               ],
+     *               "next_page_url": null,
+     *               "path": "http://localhost:8000/api/user/search/created_at/desc/test",
+     *               "per_page": 30,
+     *               "prev_page_url": null,
+     *               "to": 10,
+     *               "total": 10
+     *           }
+     *       }
+     *    @apiVersion 0.1.0
+     */
 
     public function searchUsers(Request $request, $sortByStr, $sortDirStr, $search){
         $sortBy = request()->query("sort_by", $sortByStr);
