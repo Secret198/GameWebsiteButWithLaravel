@@ -4,6 +4,9 @@ if the post table is empty
 Post creation validation
 
 Customize error messages
+don't return the entire post
+
+Now: numeric errors,
 
 Abilities:
     Everyone:

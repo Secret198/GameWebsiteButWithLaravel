@@ -15,13 +15,15 @@ class PostController extends Controller
 {
 
     /**
-     * @api {post} /post Post registration
+     * @api {post} /post Post creation
      * @apiGroup Post
      * @apiUse HeadersWithToken
      * @apiBody {String{min:10 - max:65534}} post Text of the new post
-     * @apiBody {String{max: 500KB}} image Base64 encoded image for the new post
+     * @apiBody {String{max: 500KB}} [image] Base64 encoded image for the new post
+     * @apiError Unauthenticated User making the request is not logged in or has outdated access token.
      * @apiError ThePostFieldMustBeAtLeast10Characters <code>post</code> must be at least 10 characters.
      * @apiError ThePostFieldMustNotBeGreaterThan65534Characters. <code>post</code> must be below 65534 characters.
+     * @apiError ThePostFieldIsRequired The <code>post</code> field is required
      * @apiError TheImageMustBeOfTypeJpeg,jpg,png <code>image</code> must be of type jpeg, jpg, png
      * @apiErrorExample {json} Error-Response:
      *     HTTP/1.1 422 Unprocessable Content
@@ -33,22 +35,18 @@ class PostController extends Controller
      *               ]
      *           }
      *       }
-     * @apiPermission none
-     * @apiSuccess {String} message Information about the registration.
-     * @apiSuccess {Object} user Data of the newly registered user.
-     * @apiSuccess {Number} user.id   Users <code>id</code>.
-     * @apiSuccess {String} user.token User's access <code>token</code>.
-     * @apiSuccess {Number} user.privilege User's <code>privilege</code> level.
+     * @apiPermission normal user
+     * @apiSuccess {String} message Information about the post creation.
+     * @apiSuccess {Object} post Data of the newly created post.
+     * @apiSuccess {Number} post.id <code>id</code> of the new post.
      *    @apiSuccessExample {json} Success-Response:
      *    HTTP/1.1 200 OK
-     *    {
-     *           "message": "User registered successfully",
-     *           "user": {
-     *               "id": 11,
-     *               "token": "5|wt46dJE69ABNtf7luWYGaIk8WE5P2JYoCILBzJcqadf29d0d",
-     *               "privilege": 1
+     *       {
+     *           "message": "Post created successfully",
+     *           "post": {
+     *               "id": 11
      *           }
-     *    }
+     *       }
      *    @apiVersion 0.1.0
      */
 
@@ -63,7 +61,6 @@ class PostController extends Controller
 
         $post = new Post();
         $post->post = $request->post;
-        // $user_id = User::findOrFail($request->user_id)->id;
         $post->user_id = $accessTokenUser->id;
         $post->likes = 0;
 
@@ -91,6 +88,46 @@ class PostController extends Controller
             ]
         ]);
     }
+
+    /**
+     * @api {patch} /post/:id Post update
+     * @apiDescription Updating posts, normal users can only update their own posts, while admins can update everyone's
+     * @apiParam {Number} id Id of the post to be updated
+     * @apiGroup Post
+     * @apiUse HeadersWithToken
+     * @apiBody {String{min:10 - max:65534}} [post] Text of the new post
+     * @apiBody {String{max: 500KB}} [image] Base64 encoded image for the new post
+     * @apiBody {Number} [likes] The new number of likes on the post
+     * @apiError Unauthenticated User making the request is not logged in or has outdated access token.
+     * @apiError ThePostFieldMustBeAtLeast10Characters <code>post</code> must be at least 10 characters.
+     * @apiError ThePostFieldMustNotBeGreaterThan65534Characters. <code>post</code> must be below 65534 characters.
+     * @apiError TheImageMustBeOfTypeJpeg,jpg,png <code>image</code> must be of type jpeg, jpg, png
+     * @apiError NoQueryResultsForModel:id Post with <code>id</code> could not be found
+     * @apiError TheLikesFieldMustBeANumber <code>likes</code> field must be a number
+     * @apiErrorExample {json} Error-Response:
+     *     HTTP/1.1 422 Unprocessable Content
+     *       {
+     *           "message": "The post field must be at least 10 characters.",
+     *           "errors": {
+     *               "post": [
+     *                   "The post field must be at least 10 characters."
+     *               ]
+     *           }
+     *       }
+     * @apiPermission normal user
+     * @apiSuccess {String} message Information about the post update.
+     * @apiSuccess {Object} post Data of the updated post.
+     * @apiSuccess {Number} post.id <code>id</code> of the updated post.
+     * @apiSuccessExample {json} Success-Response:
+     *    HTTP/1.1 200 OK
+     *       {
+     *           "message": "Post updated successfully",
+     *           "post": {
+     *               "id": 3
+     *           }
+     *       }
+     *    @apiVersion 0.1.0
+     */
 
     public function update(Request $request, $id){
         $request->validate([
@@ -124,6 +161,30 @@ class PostController extends Controller
         ]);
     }
 
+    /**
+     * @api {delete} /post/:id Delete post
+     * @apiDescription Deleting posts, normal users can delete their own posts, while admis can delete everyone's.
+     * @apiParam {Number} id Id of the post to be deleted
+     * @apiGroup Post
+     * @apiUse HeadersWithToken
+     * @apiError Unauthenticated User making the request is not logged in or has outdated access token.
+     * @apiError NoQueryEesultsForModel:id Post with <code>id</code> could not be found.
+     * @apiError ActionNotAllowed Normal users are not allowed to delete others user's posts
+     * @apiErrorExample {json} Error-Response:
+     *     HTTP/1.1 401 Unauthorized
+     *       {
+     *           "message": "Action not allowed",
+     *       }
+     * @apiPermission normal user
+     * @apiSuccess {String} message Information about the post deletion.
+     * @apiSuccessExample {json} Success-Response:
+     *    HTTP/1.1 200 OK
+     *       {
+     *           "message": "Post deleted successfully",
+     *       }
+     *    @apiVersion 0.1.0
+     */
+
     public function delete(Request $request, $id)
     {
         $accessTokenUser = PersonalAccessToken::findToken($request->bearerToken())->tokenable;
@@ -139,6 +200,35 @@ class PostController extends Controller
         ]);
     }
 
+    /**
+     * @api {delete} /post/restore/:id Restore post
+     * @apiParam {Number} id Id of the post to be restored
+     * @apiGroup Post
+     * @apiUse HeadersWithToken
+     * @apiError Unauthenticated User making the request is not logged in or has outdated access token.
+     * @apiError NoQueryEesultsForModel:id Post with <code>id</code> could not be found.
+     * @apiError ActionNotAllowed Normal users are not allowed to restore posts
+     * @apiError InvalidAbilityProvided The user is not authorized to restore posts
+     * @apiErrorExample {json} Error-Response:
+     *     HTTP/1.1 401 Unauthorized
+     *       {
+     *           "message": "Action not allowed",
+     *       }
+     * @apiPermission admin
+     * @apiSuccess {String} message Information about the post restoration.
+     * @apiSuccess {Object} post Data of the restored post.
+     * @apiSuccess {Number} post.id <code>id</code> of the restored post.
+     * @apiSuccessExample {json} Success-Response:
+     *    HTTP/1.1 200 OK
+     *       {
+     *           "message": "Post restored successfully",
+     *           "post": {
+     *               "id": 3
+     *           }
+     *       }
+     *    @apiVersion 0.1.0
+     */
+
     public function restore($id){
         $post = Post::withTrashed()->findOrFail($id);
         $post->restore();
@@ -149,6 +239,45 @@ class PostController extends Controller
             ]
         ]);
     }
+
+    /**
+     * @api {get} /post/:id Get post data
+     * @apiDescription Getting post data, admin users get additional fields returned in the response, compared to normal users
+     * @apiParam {Number} id Id of post to be queried
+     * @apiGroup Post
+     * @apiUse HeadersWithToken
+     * @apiError Unauthenticated. User making the request is not logged in or has outdated access token.
+     * @apiError NoQueryResultsForModel:id Post with <code>id</code> could not be found
+     * @apiErrorExample {json} Error-Response:
+     *     HTTP/1.1 401 Unathorized
+     *       {
+     *           "message": "Unauthenticated,"
+     *       }
+     * @apiPermission normal user
+     * @apiSuccess (Success-Normal user) {Object} post Data of the requested post.
+     * @apiSuccess (Success-Normal user) {Number} post.id   Post's <code>id</code>.
+     * @apiSuccess (Success-Normal user) {String} post.post Post's <code>text</code>.
+     * @apiSuccess (Success-Normal user) {String} post.image Post's <code>image</code> encoded with base64 encoding.
+     * @apiSuccess (Success-Normal user) {Number} post.likes Post's number of <code>likes</code>.
+     * @apiSuccess (Success-Normal user) {Date} post.created_at When the <code>post</code> was created.
+     * @apiSuccess (Success-Normal user) {Date} post.modified_at When the <code>post</code> was last modified.
+     * 
+     * @apiSuccess (Success-Admin user (fields returned in addition to the normal user fields)) {Object} post Data of the requested post
+     * @apiSuccess (Success-Admin user (fields returned in addition to the normal user fields)) {Date} post.deleted_at When the post was deleted
+     * @apiSuccessExample {json} Success-Response:
+     *    HTTP/1.1 200 OK
+     *       {
+     *           "post": {
+     *               "id": 11,
+     *               "post": "Yeah body, light weight",
+     *               "image": "data:image/jpg;base64;<base64-encoded-image>",
+     *               "likes": 0,
+     *               "created_at": "2024-11-26T17:12:34.000000Z",
+     *               "modified_at": "2024-11-26T17:12:34.000000Z"
+     *           }
+     *       }
+     *    @apiVersion 0.1.0
+     */
 
     public function getPostData(Request $request, $id){
         $accessToken = PersonalAccessToken::findToken($request->bearerToken())->abilities;
@@ -185,6 +314,123 @@ class PostController extends Controller
         ]);
     }
 
+    /**
+     * @api {get} /post/:sort_by/:sort_dir Get all posts
+     * @apiDescription Getting all posts, admin users get additional fields returned in the response, compared to normal users
+     * @apiParam {String} sort_by Field the result is sorted by
+     * @apiParam {String="asc","desc"} sort_dir Sort direction
+     * @apiGroup Post
+     * @apiUse HeadersWithToken
+     * @apiError Unauthenticated. User making the request is not logged in or has outdated access token.
+     * @apiErrorExample {json} Error-Response:
+     *     HTTP/1.1 401 Unathorized
+     *       {
+     *           "message": "Unauthenticated,"
+     *       }
+     * @apiPermission normal user
+     * @apiSuccess (Success-Normal user) {Object} posts Data of the posts.
+     * @apiSuccess (Success-Normal user) {Number} post.current_page Current page of the pagination.
+     * @apiSuccess (Success-Normal user) {Object} post.data Array of all the post data.
+     * @apiSuccess (Success-Normal user) {id} post.data.id Post's <code>id</code>.
+     * @apiSuccess (Success-Normal user) {String} post.data.post Post's text.
+     * @apiSuccess (Success-Normal user) {Date} post.data.created_at When the <code>post</code> was created.
+     * @apiSuccess (Success-Normal user) {Date} post.data.modified_at When the <code>post</code> was last modified.
+     * 
+     * @apiSuccess (Success-Admin user (fields returned in addition to the normal user fields)) {Object} post Data of the requested post
+     * @apiSuccess (Success-Admin user (fields returned in addition to the normal user fields)) {Date} post.deleted_at When the post was deleted
+     * @apiSuccessExample {json} Success-Response:
+     *    HTTP/1.1 200 OK
+     *       {
+     *           "posts": {
+     *               "current_page": 1,
+     *               "data": [
+     *                   {
+     *                       "id": 1,
+     *                       "post": "Alice, who was beginning to feel very uneasy: to.",
+     *                       "created_at": "2024-11-23T13:19:26.000000Z",
+     *                       "updated_at": "2024-11-23T13:19:26.000000Z"
+     *                   },
+     *                   {
+     *                       "id": 2,
+     *                       "post": "Dinah, tell me who YOU are, first.' 'Why?' said.",
+     *                       "created_at": "2024-11-23T13:19:26.000000Z",
+     *                       "updated_at": "2024-11-23T13:19:26.000000Z"
+     *                   },
+     *                   {
+     *                       "id": 5,
+     *                       "post": "I can guess that,' she added in an undertone to.",
+     *                       "created_at": "2024-11-23T13:19:26.000000Z",
+     *                       "updated_at": "2024-11-23T13:19:26.000000Z"
+     *                   },
+     *                   {
+     *                       "id": 6,
+     *                       "post": "Gryphon. '--you advance twice--' 'Each with a.",
+     *                       "created_at": "2024-11-23T13:19:26.000000Z",
+     *                       "updated_at": "2024-11-23T13:19:26.000000Z"
+     *                   },
+     *                   {
+     *                       "id": 7,
+     *                       "post": "I should be like then?' And she went round the.",
+     *                       "created_at": "2024-11-23T13:19:26.000000Z",
+     *                       "updated_at": "2024-11-23T13:19:26.000000Z"
+     *                   },
+     *                   {
+     *                       "id": 8,
+     *                       "post": "At this moment the door with his tea spoon at.",
+     *                       "created_at": "2024-11-23T13:19:26.000000Z",
+     *                       "updated_at": "2024-11-23T13:19:26.000000Z"
+     *                   },
+     *                   {
+     *                       "id": 9,
+     *                       "post": "And in she went. Once more she found she had.",
+     *                       "created_at": "2024-11-23T13:19:26.000000Z",
+     *                       "updated_at": "2024-11-23T13:19:26.000000Z"
+     *                   },
+     *                   {
+     *                       "id": 10,
+     *                       "post": "Queen added to one of them didn't know it to the.",
+     *                       "created_at": "2024-11-23T13:19:26.000000Z",
+     *                       "updated_at": "2024-11-23T13:19:26.000000Z"
+     *                   },
+     *                   {
+     *                       "id": 11,
+     *                       "post": "Yeah body, light weight",
+     *                       "created_at": "2024-11-26T17:12:34.000000Z",
+     *                       "updated_at": "2024-11-26T17:12:34.000000Z"
+     *                   }
+     *               ],
+     *               "first_page_url": "http://localhost:8000/api/post/id/asc?page=1",
+     *               "from": 1,
+     *               "last_page": 1,
+     *               "last_page_url": "http://localhost:8000/api/post/id/asc?page=1",
+     *               "links": [
+     *                   {
+     *                       "url": null,
+     *                       "label": "&laquo; Previous",
+     *                       "active": false
+     *                   },
+     *                   {
+     *                       "url": "http://localhost:8000/api/post/id/asc?page=1",
+     *                       "label": "1",
+     *                       "active": true
+     *                   },
+     *                   {
+     *                       "url": null,
+     *                       "label": "Next &raquo;",
+     *                       "active": false
+     *                   }
+     *               ],
+     *               "next_page_url": null,
+     *               "path": "http://localhost:8000/api/post/id/asc",
+     *               "per_page": 30,
+     *               "prev_page_url": null,
+     *               "to": 9,
+     *               "total": 9
+     *           }
+     *       }
+     *    @apiVersion 0.1.0
+     */
+
     public function getAllPosts(Request $request, $sortByStr, $sortDirStr){
         $sortBy = request()->query("sort_by", $sortByStr);
         $sortDir = request()->query("sort_dir", $sortDirStr);
@@ -212,6 +458,88 @@ class PostController extends Controller
         ]);
            
     }
+
+    /**
+     * @api {get} /post/search/:sort_by/:sort_dir/:search_for Search for posts
+     * @apiDescription Search for posts, admin users get additional fields returned in the response, compared to normal users
+     * @apiParam {String} sort_by Field the result is sorted by
+     * @apiParam {String="asc","desc"} sort_dir Sort direction
+     * @apiParam {String} search_for Keyword to search for
+     * @apiGroup Post
+     * @apiUse HeadersWithToken
+     * @apiError Unauthenticated. User making the request is not logged in or has outdated access token.
+     * @apiErrorExample {json} Error-Response:
+     *     HTTP/1.1 401 Unathorized
+     *       {
+     *           "message": "Unauthenticated,"
+     *       }
+     * @apiPermission normal user
+     * @apiSuccess (Success-Normal user) {Object} posts Data of the posts.
+     * @apiSuccess (Success-Normal user) {Number} post.current_page Current page of the pagination.
+     * @apiSuccess (Success-Normal user) {Object} post.data Array of all the post data.
+     * @apiSuccess (Success-Normal user) {id} post.data.id Post's <code>id</code>.
+     * @apiSuccess (Success-Normal user) {String} post.data.post Post's text.
+     * @apiSuccess (Success-Normal user) {Date} post.data.created_at When the <code>post</code> was created.
+     * @apiSuccess (Success-Normal user) {Date} post.data.modified_at When the <code>post</code> was last modified.
+     * 
+     * @apiSuccess (Success-Admin user (fields returned in addition to the normal user fields)) {Object} post Data of the requested post
+     * @apiSuccess (Success-Admin user (fields returned in addition to the normal user fields)) {Date} post.deleted_at When the post was deleted
+     * @apiSuccessExample {json} Success-Response:
+     *    HTTP/1.1 200 OK
+     *       {
+     *           "posts": {
+     *               "current_page": 1,
+     *               "data": [
+     *                   {
+     *                       "id": 1,
+     *                       "post": "Alice, who was beginning to feel very uneasy: to.",
+     *                       "created_at": "2024-11-23T13:19:26.000000Z",
+     *                       "updated_at": "2024-11-23T13:19:26.000000Z"
+     *                   },
+     *                   {
+     *                       "id": 5,
+     *                       "post": "I can guess that,' she added in an undertone to.",
+     *                       "created_at": "2024-11-23T13:19:26.000000Z",
+     *                       "updated_at": "2024-11-23T13:19:26.000000Z"
+     *                   },
+     *                   {
+     *                       "id": 10,
+     *                       "post": "Queen added to one of them didn't know it to the.",
+     *                       "created_at": "2024-11-23T13:19:26.000000Z",
+     *                       "updated_at": "2024-11-23T13:19:26.000000Z"
+     *                   }
+     *               ],
+     *               "first_page_url": "http://localhost:8000/api/post/search/created_at/desc/to?page=1",
+     *               "from": 1,
+     *               "last_page": 1,
+     *               "last_page_url": "http://localhost:8000/api/post/search/created_at/desc/to?page=1",
+     *               "links": [
+     *                   {
+     *                       "url": null,
+     *                       "label": "&laquo; Previous",
+     *                       "active": false
+     *                   },
+     *                   {
+     *                       "url": "http://localhost:8000/api/post/search/created_at/desc/to?page=1",
+     *                       "label": "1",
+     *                       "active": true
+     *                   },
+     *                   {
+     *                       "url": null,
+     *                       "label": "Next &raquo;",
+     *                       "active": false
+     *                   }
+     *               ],
+     *               "next_page_url": null,
+     *               "path": "http://localhost:8000/api/post/search/created_at/desc/to",
+     *               "per_page": 30,
+     *               "prev_page_url": null,
+     *               "to": 3,
+     *               "total": 3
+     *           }
+     *       }
+     *    @apiVersion 0.1.0
+     */
 
     public function searchPosts(Request $request, $sortByStr, $sortDirStr, $search){
         $sortBy = request()->query("sort_by", $sortByStr);

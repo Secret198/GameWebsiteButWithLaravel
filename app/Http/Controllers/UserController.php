@@ -20,7 +20,7 @@ class UserController extends Controller
      * {
      *  "Accept": "Application/json",
      *  "Content-type": "Application/json",
-     *  "Authorization: "Bearer <bearer-token>"
+     *  "Authorization": "Bearer <bearer-token>"
      * } 
      */
 
@@ -34,6 +34,8 @@ class UserController extends Controller
      * }
      * @apiBody {Email} email User's email address
      * @apiBody {String} password User's password
+     * @apiError ThePasswordFieldIsRequired The <code>password</code> field is required
+     * @apiError TheEmailFieldIsRequired The <code>email</code> field is required
      *  @apiError InvalidEmailOrPassword <code>email</code> or <code>password</code> of user was not found.
      * @apiErrorExample {json} Error-Response:
      *     HTTP/1.1 404 Not Found
@@ -106,6 +108,9 @@ class UserController extends Controller
      * @apiBody {Email} email New user's email address
      * @apiBody {String{min: 3}} name New user's user <code>name</code>
      * @apiBody {String{min: 8}} password New user's <code>password</code>
+     * @apiError ThePasswordFieldIsRequired The <code>password</code> field is required
+     * @apiError TheEmailFieldIsRequired The <code>email</code> field is required
+     * @apiError TheNameFieldIsRequired The <code>name</code> field is required
      * @apiError ThePasswordFieldMustBeAtLeast8Characters <code>password</code> must be at least 8 characters.
      * @apiError ThereIsAlreadyAnAccountWithThisEmailAddress A user with this <code>email</code> already exists in the database.
      * @apiErrorExample {json} Error-Response:
@@ -189,7 +194,8 @@ class UserController extends Controller
      * @apiGroup User
      * @apiUse HeadersWithToken
      * @apiError Unauthenticated User making the request is not logged in or has outdated access token.
-     * @apiError InvalidAbilityProvided Normal users are not authorized to make other users admin.
+     * @apiError InvalidAbilityProvided The user is not authorized to create admins
+     * @apiError NoQueryResultsForModel:id User with <code>id</code> could not be found
      * @apiErrorExample {json} Error-Response:
      *     HTTP/1.1 401 Unathorized
      *     {
@@ -234,6 +240,7 @@ class UserController extends Controller
      * @api {put} /user/update/:id User update
      * @apiParam {Number} id Id of user to be updated
      * @apiGroup User
+     * @apiDescription Updating the user data, normal users are only allowed to update their own data, while admin users can update everyone's
      * @apiUse HeadersWithToken
      * @apiBody {String{min:3}} [name] New name of user
      * @apiBody {Email} [email] New email of user
@@ -252,6 +259,7 @@ class UserController extends Controller
      * @apiError TheBoss1lvlFieldMustBeANumber <code>boss1lvl</code> field must be a number.
      * @apiError TheBoss2lvlFieldMustBeANumber <code>boss2lvl</code> field must be a number.
      * @apiError TheBoss3lvlFieldMustBeANumber <code>boss3lvl</code> field must be a number.
+     * @apiError NoQueryResultsForModel:id User with <code>id</code> could not be found
      * @apiErrorExample {json} Error-Response:
      *     HTTP/1.1 422 Unprocessable Content
      *       {
@@ -339,7 +347,8 @@ class UserController extends Controller
      * @apiGroup User
      * @apiUse HeadersWithToken
      * @apiError Unauthenticated User making the request is not logged in or has outdated access token.
-     * @apiError InvalidAbilityProvided Normal users are not authorized to delete users.
+     * @apiError InvalidAbilityProvided The user is not authorized to delete users.
+     * @apiError NoQueryResultsForModel:id User with <code>id</code> could not be found
      * @apiErrorExample {json} Error-Response:
      *     HTTP/1.1 401 Unathorized
      *     {
@@ -369,7 +378,8 @@ class UserController extends Controller
      * @apiGroup User
      * @apiUse HeadersWithToken
      * @apiError Unauthenticated User making the request is not logged in or has outdated access token.
-     * @apiError InvalidAbilityProvided Normal users are not authorized to restore deleted users.
+     * @apiError InvalidAbilityProvided The user is not authorized to restore deleted users.
+     * @apiError NoQueryResultsForModel:id User with <code>id</code> could not be found
      * @apiErrorExample {json} Error-Response:
      *     HTTP/1.1 401 Unathorized
      *     {
@@ -411,17 +421,18 @@ class UserController extends Controller
 
     /**
      * @api {get} /user/:id Get user data
+     * @apiDescription Getting user data, admin users get additional fields returned in the response, compared to normal users
      * @apiParam {Number} id Id of user to be queried
      * @apiGroup User
      * @apiUse HeadersWithToken
      * @apiError Unauthenticated. User making the request is not logged in or has outdated access token.
+     * @apiError NoQueryResultsForModel:id User with <code>id</code> could not be found
      * @apiErrorExample {json} Error-Response:
      *     HTTP/1.1 401 Unathorized
      *       {
      *           "message": "Unauthenticated,"
      *       }
      * @apiPermission normal user
-     * @apiSuccess (Success-Normal user) {String} message Information about the request.
      * @apiSuccess (Success-Normal user) {Object} user Data of the requested user.
      * @apiSuccess (Success-Normal user) {Number} user.id   User's <code>id</code>.
      * @apiSuccess (Success-Normal user) {Number} user.name User's <code>name</code>.
@@ -523,8 +534,9 @@ class UserController extends Controller
 
     /**
      * @api {get} /user/all/:sort_by/:sort_dir Get all users
+     * @apiDescription Getting user data, admin users get additional fields returned in the response, compared to normal users
      * @apiParam {String} sort_by Field to be used to order the posts by
-     * @apiParam {String} sort_dir Order direction for the posts
+     * @apiParam {String="asc","desc"} sort_dir Order direction for the posts
      * @apiGroup User
      * @apiUse HeadersWithToken
      * @apiError Unauthenticated. User making the request is not logged in or has outdated access token.
@@ -536,7 +548,7 @@ class UserController extends Controller
      * @apiPermission normal user
      * @apiSuccess (Success-Normal user) {Object} users Data of all the users.
      * @apiSuccess (Success-Normal user) {Number} users.current_page Current page of the pagination.
-     * @apiSuccess (Success-Normal user) {Object} users.data Data of the returnded users.
+     * @apiSuccess (Success-Normal user) {Object} users.data Array of the returnded users.
      * @apiSuccess (Success-Normal user) {Number} users.data.id User <code>id</code>.
      * @apiSuccess (Success-Normal user) {String} users.data.name User <code>name</code>.
      * @apiSuccess (Success-Normal user) {Number} users.first_page_url I'm sure it does something.
@@ -652,8 +664,9 @@ class UserController extends Controller
 
     /**
      * @api {get} /user/:sort_by/:sort_dir Get user's own posts
+     * @apiDescription Getting the user's own posts, admin users can view their deleted posts as well
      * @apiParam {String} sort_by Field to be used to order the posts by
-     * @apiParam {String} sort_dir Order direction for the posts
+     * @apiParam {String="asc","desc"} sort_dir Order direction for the posts
      * @apiGroup User
      * @apiUse HeadersWithToken
      * @apiError Unauthenticated. User making the request is not logged in or has outdated access token.
@@ -770,8 +783,9 @@ class UserController extends Controller
 
     /**
      * @api {get} /user/search/:sort_by/:sort_dir/:search_for Search for users
+     * @apiDescription Getting user data, admin users get additional fields returned in the response, compared to normal users
      * @apiParam {String} sort_by Field to be used to order the posts by
-     * @apiParam {String} sort_dir Order direction for the posts
+     * @apiParam {String="asc","desc"} sort_dir Order direction for the posts
      * @apiParam {String} search_for Keyword to search for in user names
      * @apiGroup User
      * @apiUse HeadersWithToken
