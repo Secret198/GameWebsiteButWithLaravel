@@ -551,7 +551,6 @@ class UserController extends Controller
      * @apiSuccess (Success-Normal user) {Object} users.data Array of the returnded users.
      * @apiSuccess (Success-Normal user) {Number} users.data.id User <code>id</code>.
      * @apiSuccess (Success-Normal user) {String} users.data.name User <code>name</code>.
-     * @apiSuccess (Success-Normal user) {Number} users.first_page_url I'm sure it does something.
      * 
      * @apiSuccess (Success-Admin user (fields returned in addition to the normal user fields)) {Object} user.data Data of the requested user
      * @apiSuccess (Success-Admin user (fields returned in addition to the normal user fields)) {Date} user.data.deleted_at When the user was deleted
@@ -801,7 +800,6 @@ class UserController extends Controller
      * @apiSuccess (Success-Normal user) {Object} users.data Data of the returnded users.
      * @apiSuccess (Success-Normal user) {Number} users.data.id User <code>id</code>.
      * @apiSuccess (Success-Normal user) {String} users.data.name User <code>name</code>.
-     * @apiSuccess (Success-Normal user) {Number} users.first_page_url I'm sure it does something.
      * 
      * @apiSuccess (Success-Admin user (fields returned in addition to the normal user fields)) {Object} user.data Data of the requested user
      * @apiSuccess (Success-Admin user (fields returned in addition to the normal user fields)) {Date} user.data.deleted_at When the user was deleted
