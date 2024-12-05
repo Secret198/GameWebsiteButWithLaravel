@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('posts', function (Blueprint $table) {
             $table->id();
             $table->text('post');
-            $table->string('image');        //Ez még kérdéses
+            $table->string('image')->nullable();        //Ez még kérdéses
             $table->integer('likes');
             $table->unsignedBigInteger('user_id');
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
