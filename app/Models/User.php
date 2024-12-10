@@ -134,4 +134,8 @@ class User extends Authenticatable
     public function achievements(){
         return $this->belongsToMany(Achievement::class);
     }
+
+    public function likedPosts(){
+        return $this->belongsToMany(Post::class);
+    }
 }

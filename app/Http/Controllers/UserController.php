@@ -444,6 +444,7 @@ class UserController extends Controller
      * @apiSuccess (Success-Normal user) {Number} user.boss2lvl User's <code>boss2lvl</code>.
      * @apiSuccess (Success-Normal user) {Number} user.boss3lvl User's <code>boss3lvl</code>.
      * @apiSuccess (Success-Normal user) {Date} user.created_at When the user was created.
+     * @apiSuccess (Success-Normal user) {Number} user.privilege <code>privilege</code> level of user.
      * @apiSuccess (Success-Normal user) {Object} achievements Achievements of the selected user.
      * @apiSuccess (Success-Normal user) {Number} achievements.id Achievement <code>id</code>.
      * @apiSuccess (Success-Normal user) {String} achievements.name Achievement <code>name</code>.
@@ -470,7 +471,8 @@ class UserController extends Controller
      *               "boss1lvl": 9,
      *               "boss2lvl": 7,
      *               "boss3lvl": 10,
-     *               "created_at": "2024-11-05T11:49:11.000000Z"
+     *               "created_at": "2024-11-05T11:49:11.000000Z",
+     *               "privilege": 1
      *           },
      *           "achievements": [
      *               {
@@ -486,7 +488,7 @@ class UserController extends Controller
      *               }
      *           ]
      *       }
-     *    @apiVersion 0.1.0
+     *    @apiVersion 0.2.0
      */
 
     public function getUserData(Request $request, $id){
@@ -505,7 +507,8 @@ class UserController extends Controller
                 "boss3lvl" => $user->boss3lvl,
                 "deleted_at" => $user->deleted_at,
                 "created_at" => $user->created_at,
-                "modified_at" => $user->updated_at
+                "modified_at" => $user->updated_at,
+                "privilege" => $user->privilege
             ];
         }
         else{
@@ -520,7 +523,8 @@ class UserController extends Controller
                 "boss1lvl" => $user->boss1lvl,
                 "boss2lvl" => $user->boss2lvl,
                 "boss3lvl" => $user->boss3lvl,
-                "created_at" => $user->created_at
+                "created_at" => $user->created_at,
+                "privilege" => $user->privilege
             ];
         }
 
@@ -550,6 +554,7 @@ class UserController extends Controller
      * @apiSuccess (Success-Normal user) {Number} users.current_page Current page of the pagination.
      * @apiSuccess (Success-Normal user) {Object} users.data Array of the returnded users.
      * @apiSuccess (Success-Normal user) {Number} users.data.id User <code>id</code>.
+     * @apiSuccess (Success-Normal user) {Number} users.data.privilege User <code>privilege</code> level.
      * @apiSuccess (Success-Normal user) {String} users.data.name User <code>name</code>.
      * 
      * @apiSuccess (Success-Admin user (fields returned in addition to the normal user fields)) {Object} user.data Data of the requested user
@@ -559,80 +564,56 @@ class UserController extends Controller
      * @apiSuccessExample {json} Success-Response:
      *    HTTP/1.1 200 OK
      *       {
-     *           "users": {
-     *               "current_page": 1,
-     *               "data": [
-     *                   {
-     *                       "id": 1,
-     *                       "name": "Test User0"
-     *                   },
-     *                   {
-     *                       "id": 2,
-     *                       "name": "Test User1"
-     *                   },
-     *                   {
-     *                       "id": 3,
-     *                       "name": "Test User2"
-     *                   },
-     *                   {
-     *                       "id": 4,
-     *                       "name": "Test User3"
-     *                   },
-     *                   {
-     *                       "id": 5,
-     *                       "name": "Test User4"
-     *                   },
-     *                   {
-     *                       "id": 6,
-     *                       "name": "Test User5"
-     *                   },
-     *                   {
-     *                       "id": 7,
-     *                       "name": "Test User6"
-     *                   },
-     *                   {
-     *                       "id": 8,
-     *                       "name": "Test User7"
-     *                   },
-     *                   {
-     *                       "id": 9,
-     *                       "name": "Test User8"
-     *                   },
-     *                   {
-     *                       "id": 10,
-     *                       "name": "Test User9"
-     *                   }
-     *               ],
-     *               "first_page_url": "http://localhost:8000/api/user/all/name/asc?page=1",
-     *               "from": 1,
-     *               "last_page": 1,
-     *               "last_page_url": "http://localhost:8000/api/user/all/name/asc?page=1",
-     *               "links": [
-     *                   {
-     *                       "url": null,
-     *                       "label": "&laquo; Previous",
-     *                       "active": false
-     *                   },
-     *                   {
-     *                       "url": "http://localhost:8000/api/user/all/name/asc?page=1",
-     *                       "label": "1",
-     *                       "active": true
-     *                   },
-     *                   {
-     *                       "url": null,
-     *                       "label": "Next &raquo;",
-     *                       "active": false
-     *                   }
-     *               ],
-     *               "next_page_url": null,
-     *               "path": "http://localhost:8000/api/user/all/name/asc",
-     *               "per_page": 30,
-     *               "prev_page_url": null,
-     *               "to": 10,
-     *               "total": 10
-     *           }
-     *       }
-     *    @apiVersion 0.1.0
+     *          "users": {
+     *              "current_page": 1,
+     *              "data": [
+     *                  {
+     *                      "id": 11,
+     *                      "privilege": 1,
+     *                      "name": "lakatos"
+     *                  },
+     *                  {
+     *                      "id": 1,
+     *                      "privilege": 10,
+     *                      "name": "Test User0jkkjkj"
+     *                  },
+     *                  ...
+     *                  {
+     *                      "id": 10,
+     *                      "privilege": 10,
+     *                      "name": "Test User9"
+     *                  }
+     *              ],
+     *              "first_page_url": "http://localhost:8000/api/user/all/name/asc?page=1",
+     *              "from": 1,
+     *              "last_page": 1,
+     *              "last_page_url": "http://localhost:8000/api/user/all/name/asc?page=1",
+     *              "links": [
+     *                  {
+     *                      "url": null,
+     *                      "label": "&laquo; Previous",
+     *                      "active": false
+     *                  },
+     *                  {
+     *                      "url": "http://localhost:8000/api/user/all/name/asc?page=1",
+     *                      "label": "1",
+     *                      "active": true
+     *                  },
+     *                  {
+     *                      "url": null,
+     *                      "label": "Next &raquo;",
+     *                      "active": false
+     *                  }
+     *              ],
+     *              "next_page_url": null,
+     *              "path": "http://localhost:8000/api/user/all/name/asc",
+     *              "per_page": 30,
+     *              "prev_page_url": null,
+     *              "to": 11,
+     *              "total": 11
+     *          }
+     *      }
+     *    @apiVersion 0.2.0
      */
 
     public function getAllUsers(Request $request, $sortByStr, $sortDirStr){
@@ -643,6 +624,7 @@ class UserController extends Controller
             $users = User::withTrashed()->select([
                 "id",
                 "name",
+                "privilege",
                 "created_at",
                 "updated_at",
                 "deleted_at"
@@ -651,6 +633,7 @@ class UserController extends Controller
         else{
             $users = User::select([
                 "id",
+                "privilege",
                 "name",
             ])->orderBy($sortBy, $sortDir)->paginate(30);
         }
@@ -800,6 +783,7 @@ class UserController extends Controller
      * @apiSuccess (Success-Normal user) {Object} users.data Data of the returnded users.
      * @apiSuccess (Success-Normal user) {Number} users.data.id User <code>id</code>.
      * @apiSuccess (Success-Normal user) {String} users.data.name User <code>name</code>.
+     * @apiSuccess (Success-Normal user) {Number} users.data.privilege User <code>privilege</code> level.
      * 
      * @apiSuccess (Success-Admin user (fields returned in addition to the normal user fields)) {Object} user.data Data of the requested user
      * @apiSuccess (Success-Admin user (fields returned in addition to the normal user fields)) {Date} user.data.deleted_at When the user was deleted
@@ -807,81 +791,57 @@ class UserController extends Controller
      * @apiSuccess (Success-Admin user (fields returned in addition to the normal user fields)) {Date} user.data.created_at When the user was created
      * @apiSuccessExample {json} Success-Response:
      *    HTTP/1.1 200 OK
-     *       {
-     *           "users": {
-     *               "current_page": 1,
-     *               "data": [
-     *                   {
-     *                       "id": 9,
-     *                       "name": "Test User8"
-     *                   },
-     *                   {
-     *                       "id": 10,
-     *                       "name": "Test User9"
-     *                   },
-     *                   {
-     *                       "id": 8,
-     *                       "name": "Test User7"
-     *                   },
-     *                   {
-     *                       "id": 7,
-     *                       "name": "Test User6"
-     *                   },
-     *                   {
-     *                       "id": 5,
-     *                       "name": "Test User4"
-     *                   },
-     *                   {
-     *                       "id": 6,
-     *                       "name": "Test User5"
-     *                   },
-     *                   {
-     *                       "id": 4,
-     *                       "name": "Test User3"
-     *                   },
-     *                   {
-     *                       "id": 3,
-     *                       "name": "Test User2"
-     *                   },
-     *                   {
-     *                       "id": 2,
-     *                       "name": "Test User1"
-     *                   },
-     *                   {
-     *                       "id": 1,
-     *                       "name": "Test User0"
-     *                   }
-     *               ],
-     *               "first_page_url": "http://localhost:8000/api/user/search/created_at/desc/test?page=1",
-     *               "from": 1,
-     *               "last_page": 1,
-     *               "last_page_url": "http://localhost:8000/api/user/search/created_at/desc/test?page=1",
-     *               "links": [
-     *                   {
-     *                       "url": null,
-     *                       "label": "&laquo; Previous",
-     *                       "active": false
-     *                   },
-     *                   {
-     *                       "url": "http://localhost:8000/api/user/search/created_at/desc/test?page=1",
-     *                       "label": "1",
-     *                       "active": true
-     *                   },
-     *                   {
-     *                       "url": null,
-     *                       "label": "Next &raquo;",
-     *                       "active": false
-     *                   }
-     *               ],
-     *               "next_page_url": null,
-     *               "path": "http://localhost:8000/api/user/search/created_at/desc/test",
-     *               "per_page": 30,
-     *               "prev_page_url": null,
-     *               "to": 10,
-     *               "total": 10
-     *           }
-     *       }
-     *    @apiVersion 0.1.0
+     *      {
+     *          "users": {
+     *              "current_page": 1,
+     *              "data": [
+     *                  {
+     *                      "id": 9,
+     *                      "name": "Test User8",
+     *                      "privilege": 10
+     *                  },
+     *                  {
+     *                      "id": 10,
+     *                      "name": "Test User9",
+     *                      "privilege": 10
+     *                  },
+     *                  ...
+     *                  {
+     *                      "id": 1,
+     *                      "name": "Test User0jkkjkj",
+     *                      "privilege": 10
+     *                  }
+     *              ],
+     *              "first_page_url": "http://localhost:8000/api/user/search/created_at/desc/test?page=1",
+     *              "from": 1,
+     *              "last_page": 1,
+     *              "last_page_url": "http://localhost:8000/api/user/search/created_at/desc/test?page=1",
+     *              "links": [
+     *                  {
+     *                      "url": null,
+     *                      "label": "&laquo; Previous",
+     *                      "active": false
+     *                  },
+     *                  {
+     *                      "url": "http://localhost:8000/api/user/search/created_at/desc/test?page=1",
+     *                      "label": "1",
+     *                      "active": true
+     *                  },
+     *                  {
+     *                      "url": null,
+     *                      "label": "Next &raquo;",
+     *                      "active": false
+     *                  }
+     *              ],
+     *              "next_page_url": null,
+     *              "path": "http://localhost:8000/api/user/search/created_at/desc/test",
+     *              "per_page": 30,
+     *              "prev_page_url": null,
+     *              "to": 10,
+     *              "total": 10
+     *          }
+     *      }
+     *    @apiVersion 0.2.0
      */
 
     public function searchUsers(Request $request, $sortByStr, $sortDirStr, $search){
@@ -894,13 +854,15 @@ class UserController extends Controller
                 "name",
                 "created_at",
                 "updated_at",
-                "deleted_at"
+                "deleted_at",
+                "privilege"
             ])->where("name", "LIKE", "%".$search."%")->orderBy($sortBy, $sortDir)->paginate(30);
         }
         else{
             $users = User::select([
                 "id",
                 "name",
+                "privilege"
             ])->where("name", "LIKE", "%".$search."%")->orderBy($sortBy, $sortDir)->paginate(30);
         }
 

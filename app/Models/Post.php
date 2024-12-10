@@ -34,4 +34,8 @@ class Post extends Model
         $type = pathinfo($this->image, PATHINFO_EXTENSION);
         return 'data:image/' . $type . ';base64,' . base64_encode($image);
     }
+
+    public function likers(){
+        return $this->belongsToMany(User::class);
+    }
 }

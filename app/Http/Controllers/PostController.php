@@ -97,13 +97,13 @@ class PostController extends Controller
      * @apiUse HeadersWithToken
      * @apiBody {String{min:10 - max:65534}} [post] Text of the new post
      * @apiBody {String{max: 500KB}} [image] Base64 encoded image for the new post
-     * @apiBody {Number} [likes] The new number of likes on the post
+     * @apiBody {Boolean} [likes] Wether we would like to like the post or not
      * @apiError Unauthenticated User making the request is not logged in or has outdated access token.
      * @apiError ThePostFieldMustBeAtLeast10Characters <code>post</code> must be at least 10 characters.
      * @apiError ThePostFieldMustNotBeGreaterThan65534Characters. <code>post</code> must be below 65534 characters.
      * @apiError TheImageMustBeOfTypeJpeg,jpg,png <code>image</code> must be of type jpeg, jpg, png
      * @apiError NoQueryResultsForModel:id Post with <code>id</code> could not be found
-     * @apiError TheLikesFieldMustBeANumber <code>likes</code> field must be a number
+     * @apiError TheLikesFieldMustBeTrueOrFalse <code>likes</code> field must be a boolean value
      * @apiErrorExample {json} Error-Response:
      *     HTTP/1.1 422 Unprocessable Content
      *       {
@@ -126,14 +126,14 @@ class PostController extends Controller
      *               "id": 3
      *           }
      *       }
-     *    @apiVersion 0.1.0
+     *    @apiVersion 0.2.0
      */
 
     public function update(Request $request, $id){
         $request->validate([
             "post" => "nullable|min:10|max:65534",
             "image" => "nullable|is_image:jpeg,jpg,png|base64_image_size:500", 
-            "likes" => "nullable|numeric"
+            "likes" => "nullable|boolean"
         ]);
 
         $accessTokenUser = PersonalAccessToken::findToken($request->bearerToken())->tokenable;
@@ -144,15 +144,27 @@ class PostController extends Controller
             ], 401);
         }
 
+        $likedPosts = $accessTokenUser->likedPosts->toArray();
+        $likedPostsIds = [];
+
+        foreach($likedPosts as $onePost){
+            array_push($likedPostsIds, $onePost["id"]);
+        }
+
+        if($request->likes && !in_array($post->id, $likedPostsIds)){
+            $post->likes += 1;
+            $accessTokenUser->likedPosts()->attach($post->id);      
+        }
+
         if(isset($request->image)){
             Storage::disk("local")->delete($post->image);
             $imageName = $post->processImage($request->image, $post->id);
             $post->image = $imageName;
         }
         $post->post = isset($request->post) ? $request->post : $post->post;
-        $post->likes = isset($request->likes) ? $request->likes : $post->likes;
 
         $post->save();
+
         return response()->json([
             "message"=> "Post updated successfully",
             "post" => [
@@ -333,6 +345,7 @@ class PostController extends Controller
      * @apiSuccess (Success-Normal user) {Object} post.data Array of all the post data.
      * @apiSuccess (Success-Normal user) {id} post.data.id Post's <code>id</code>.
      * @apiSuccess (Success-Normal user) {String} post.data.post Post's text.
+     * @apiSuccess (Success-Normal user) {Number} post.data.likes Post's number of <code>likes</code>.
      * @apiSuccess (Success-Normal user) {Date} post.data.created_at When the <code>post</code> was created.
      * @apiSuccess (Success-Normal user) {Date} post.data.modified_at When the <code>post</code> was last modified.
      * 
@@ -341,94 +354,62 @@ class PostController extends Controller
      * @apiSuccessExample {json} Success-Response:
      *    HTTP/1.1 200 OK
      *       {
-     *           "posts": {
-     *               "current_page": 1,
-     *               "data": [
-     *                   {
-     *                       "id": 1,
-     *                       "post": "Alice, who was beginning to feel very uneasy: to.",
-     *                       "created_at": "2024-11-23T13:19:26.000000Z",
-     *                       "updated_at": "2024-11-23T13:19:26.000000Z"
-     *                   },
-     *                   {
-     *                       "id": 2,
-     *                       "post": "Dinah, tell me who YOU are, first.' 'Why?' said.",
-     *                       "created_at": "2024-11-23T13:19:26.000000Z",
-     *                       "updated_at": "2024-11-23T13:19:26.000000Z"
-     *                   },
-     *                   {
-     *                       "id": 5,
-     *                       "post": "I can guess that,' she added in an undertone to.",
-     *                       "created_at": "2024-11-23T13:19:26.000000Z",
-     *                       "updated_at": "2024-11-23T13:19:26.000000Z"
-     *                   },
-     *                   {
-     *                       "id": 6,
-     *                       "post": "Gryphon. '--you advance twice--' 'Each with a.",
-     *                       "created_at": "2024-11-23T13:19:26.000000Z",
-     *                       "updated_at": "2024-11-23T13:19:26.000000Z"
-     *                   },
-     *                   {
-     *                       "id": 7,
-     *                       "post": "I should be like then?' And she went round the.",
-     *                       "created_at": "2024-11-23T13:19:26.000000Z",
-     *                       "updated_at": "2024-11-23T13:19:26.000000Z"
-     *                   },
-     *                   {
-     *                       "id": 8,
-     *                       "post": "At this moment the door with his tea spoon at.",
-     *                       "created_at": "2024-11-23T13:19:26.000000Z",
-     *                       "updated_at": "2024-11-23T13:19:26.000000Z"
-     *                   },
-     *                   {
-     *                       "id": 9,
-     *                       "post": "And in she went. Once more she found she had.",
-     *                       "created_at": "2024-11-23T13:19:26.000000Z",
-     *                       "updated_at": "2024-11-23T13:19:26.000000Z"
-     *                   },
-     *                   {
-     *                       "id": 10,
-     *                       "post": "Queen added to one of them didn't know it to the.",
-     *                       "created_at": "2024-11-23T13:19:26.000000Z",
-     *                       "updated_at": "2024-11-23T13:19:26.000000Z"
-     *                   },
-     *                   {
-     *                       "id": 11,
-     *                       "post": "Yeah body, light weight",
-     *                       "created_at": "2024-11-26T17:12:34.000000Z",
-     *                       "updated_at": "2024-11-26T17:12:34.000000Z"
-     *                   }
-     *               ],
-     *               "first_page_url": "http://localhost:8000/api/post/id/asc?page=1",
-     *               "from": 1,
-     *               "last_page": 1,
-     *               "last_page_url": "http://localhost:8000/api/post/id/asc?page=1",
-     *               "links": [
-     *                   {
-     *                       "url": null,
-     *                       "label": "&laquo; Previous",
-     *                       "active": false
-     *                   },
-     *                   {
-     *                       "url": "http://localhost:8000/api/post/id/asc?page=1",
-     *                       "label": "1",
-     *                       "active": true
-     *                   },
-     *                   {
-     *                       "url": null,
-     *                       "label": "Next &raquo;",
-     *                       "active": false
-     *                   }
-     *               ],
-     *               "next_page_url": null,
-     *               "path": "http://localhost:8000/api/post/id/asc",
-     *               "per_page": 30,
-     *               "prev_page_url": null,
-     *               "to": 9,
-     *               "total": 9
-     *           }
-     *       }
-     *    @apiVersion 0.1.0
+     *          "posts": {
+     *              "current_page": 1,
+     *              "data": [
+     *                  {
+     *                      "id": 1,
+     *                      "post": "Alice desperately: 'he's perfectly idiotic!' And.",
+     *                      "likes": 1774,
+     *                      "created_at": "2024-11-05T11:49:15.000000Z",
+     *                      "updated_at": "2024-11-05T11:49:15.000000Z"
+     *                  },
+     *                  {
+     *                      "id": 2,
+     *                      "post": "These were the verses the White Rabbit, who said.",
+     *                      "likes": 2597,
+     *                      "created_at": "2024-11-05T11:49:15.000000Z",
+     *                      "updated_at": "2024-11-05T11:49:15.000000Z"
+     *                  },
+     *                  ...
+     *                  {
+     *                      "id": 12,
+     *                      "post": "What a nice gentleman :)",
+     *                      "likes": 0,
+     *                      "created_at": "2024-12-03T09:07:46.000000Z",
+     *                      "updated_at": "2024-12-03T09:58:12.000000Z"
+     *                  }
+     *              ],
+     *              "first_page_url": "http://localhost:8000/api/post/id/asc?page=1",
+     *              "from": 1,
+     *              "last_page": 1,
+     *              "last_page_url": "http://localhost:8000/api/post/id/asc?page=1",
+     *              "links": [
+     *                  {
+     *                      "url": null,
+     *                      "label": "&laquo; Previous",
+     *                      "active": false
+     *                  },
+     *                  {
+     *                      "url": "http://localhost:8000/api/post/id/asc?page=1",
+     *                      "label": "1",
+     *                      "active": true
+     *                  },
+     *                  {
+     *                      "url": null,
+     *                      "label": "Next &raquo;",
+     *                      "active": false
+     *                  }
+     *              ],
+     *              "next_page_url": null,
+     *              "path": "http://localhost:8000/api/post/id/asc",
+     *              "per_page": 30,
+     *              "prev_page_url": null,
+     *              "to": 12,
+     *              "total": 12
+     *          }
+     *      }
+     *    @apiVersion 0.2.0
      */
 
     public function getAllPosts(Request $request, $sortByStr, $sortDirStr){
@@ -439,6 +420,7 @@ class PostController extends Controller
             $posts = Post::withTrashed()->select([
                 "id",
                 "post",
+                "likes",
                 "created_at",
                 "updated_at",
                 "deleted_at"
@@ -448,6 +430,7 @@ class PostController extends Controller
             $posts = Post::select([
                 "id",
                 "post",
+                "likes",
                 "created_at",
                 "updated_at",
             ])->orderBy($sortBy, $sortDir)->paginate(30);
@@ -479,6 +462,7 @@ class PostController extends Controller
      * @apiSuccess (Success-Normal user) {Object} post.data Array of all the post data.
      * @apiSuccess (Success-Normal user) {id} post.data.id Post's <code>id</code>.
      * @apiSuccess (Success-Normal user) {String} post.data.post Post's text.
+     * @apiSuccess (Success-Normal user) {Number} post.data.likes Number of <code>likes</code> on the post.
      * @apiSuccess (Success-Normal user) {Date} post.data.created_at When the <code>post</code> was created.
      * @apiSuccess (Success-Normal user) {Date} post.data.modified_at When the <code>post</code> was last modified.
      * 
@@ -486,59 +470,55 @@ class PostController extends Controller
      * @apiSuccess (Success-Admin user (fields returned in addition to the normal user fields)) {Date} post.deleted_at When the post was deleted
      * @apiSuccessExample {json} Success-Response:
      *    HTTP/1.1 200 OK
-     *       {
-     *           "posts": {
-     *               "current_page": 1,
-     *               "data": [
-     *                   {
-     *                       "id": 1,
-     *                       "post": "Alice, who was beginning to feel very uneasy: to.",
-     *                       "created_at": "2024-11-23T13:19:26.000000Z",
-     *                       "updated_at": "2024-11-23T13:19:26.000000Z"
-     *                   },
-     *                   {
-     *                       "id": 5,
-     *                       "post": "I can guess that,' she added in an undertone to.",
-     *                       "created_at": "2024-11-23T13:19:26.000000Z",
-     *                       "updated_at": "2024-11-23T13:19:26.000000Z"
-     *                   },
-     *                   {
-     *                       "id": 10,
-     *                       "post": "Queen added to one of them didn't know it to the.",
-     *                       "created_at": "2024-11-23T13:19:26.000000Z",
-     *                       "updated_at": "2024-11-23T13:19:26.000000Z"
-     *                   }
-     *               ],
-     *               "first_page_url": "http://localhost:8000/api/post/search/created_at/desc/to?page=1",
-     *               "from": 1,
-     *               "last_page": 1,
-     *               "last_page_url": "http://localhost:8000/api/post/search/created_at/desc/to?page=1",
-     *               "links": [
-     *                   {
-     *                       "url": null,
-     *                       "label": "&laquo; Previous",
-     *                       "active": false
-     *                   },
-     *                   {
-     *                       "url": "http://localhost:8000/api/post/search/created_at/desc/to?page=1",
-     *                       "label": "1",
-     *                       "active": true
-     *                   },
-     *                   {
-     *                       "url": null,
-     *                       "label": "Next &raquo;",
-     *                       "active": false
-     *                   }
-     *               ],
-     *               "next_page_url": null,
-     *               "path": "http://localhost:8000/api/post/search/created_at/desc/to",
-     *               "per_page": 30,
-     *               "prev_page_url": null,
-     *               "to": 3,
-     *               "total": 3
-     *           }
-     *       }
-     *    @apiVersion 0.1.0
+     *      {
+     *          "posts": {
+     *              "current_page": 1,
+     *              "data": [
+     *                  {
+     *                      "id": 5,
+     *                      "post": "Alice: 'allow me to him: She gave me a good.",
+     *                      "likes": 295,
+     *                      "created_at": "2024-11-05T11:49:15.000000Z",
+     *                      "updated_at": "2024-11-05T11:49:15.000000Z"
+     *                  },
+     *                  {
+     *                      "id": 8,
+     *                      "post": "I didn't know that you're mad?' 'To begin with,'.",
+     *                      "likes": 1882,
+     *                      "created_at": "2024-11-05T11:49:15.000000Z",
+     *                      "updated_at": "2024-11-05T11:49:15.000000Z"
+     *                  }
+     *              ],
+     *              "first_page_url": "http://localhost:8000/api/post/search/created_at/desc/to?page=1",
+     *              "from": 1,
+     *              "last_page": 1,
+     *              "last_page_url": "http://localhost:8000/api/post/search/created_at/desc/to?page=1",
+     *              "links": [
+     *                  {
+     *                      "url": null,
+     *                      "label": "&laquo; Previous",
+     *                      "active": false
+     *                  },
+     *                  {
+     *                      "url": "http://localhost:8000/api/post/search/created_at/desc/to?page=1",
+     *                      "label": "1",
+     *                      "active": true
+     *                  },
+     *                  {
+     *                      "url": null,
+     *                      "label": "Next &raquo;",
+     *                      "active": false
+     *                  }
+     *              ],
+     *              "next_page_url": null,
+     *              "path": "http://localhost:8000/api/post/search/created_at/desc/to",
+     *              "per_page": 30,
+     *              "prev_page_url": null,
+     *              "to": 2,
+     *              "total": 2
+     *          }
+     *      }
+     *    @apiVersion 0.2.0
      */
 
     public function searchPosts(Request $request, $sortByStr, $sortDirStr, $search){
@@ -549,6 +529,7 @@ class PostController extends Controller
             $posts = Post::withTrashed()->select([
                 "id",
                 "post",
+                "likes",
                 "created_at",
                 "updated_at",
                 "deleted_at"
@@ -558,6 +539,7 @@ class PostController extends Controller
             $posts = Post::select([
                 "id",
                 "post",
+                "likes",
                 "created_at",
                 "updated_at"
             ])->where("post", "LIKE", "%".$search."%")->orderBy($sortBy, $sortDir)->paginate(30);
