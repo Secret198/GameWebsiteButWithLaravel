@@ -97,13 +97,11 @@ class PostController extends Controller
      * @apiUse HeadersWithToken
      * @apiBody {String{min:10 - max:65534}} [post] Text of the new post
      * @apiBody {String{max: 500KB}} [image] Base64 encoded image for the new post
-     * @apiBody {Boolean} [likes] Wether we would like to like the post or not
      * @apiError Unauthenticated User making the request is not logged in or has outdated access token.
      * @apiError ThePostFieldMustBeAtLeast10Characters <code>post</code> must be at least 10 characters.
      * @apiError ThePostFieldMustNotBeGreaterThan65534Characters. <code>post</code> must be below 65534 characters.
      * @apiError TheImageMustBeOfTypeJpeg,jpg,png <code>image</code> must be of type jpeg, jpg, png
      * @apiError NoQueryResultsForModel:id Post with <code>id</code> could not be found
-     * @apiError TheLikesFieldMustBeTrueOrFalse <code>likes</code> field must be a boolean value
      * @apiErrorExample {json} Error-Response:
      *     HTTP/1.1 422 Unprocessable Content
      *       {
@@ -126,14 +124,13 @@ class PostController extends Controller
      *               "id": 3
      *           }
      *       }
-     *    @apiVersion 0.2.0
+     *    @apiVersion 0.3.0
      */
 
     public function update(Request $request, $id){
         $request->validate([
             "post" => "nullable|min:10|max:65534",
             "image" => "nullable|is_image:jpeg,jpg,png|base64_image_size:500", 
-            "likes" => "nullable|boolean"
         ]);
 
         $accessTokenUser = PersonalAccessToken::findToken($request->bearerToken())->tokenable;
@@ -142,18 +139,6 @@ class PostController extends Controller
             return response()->json([
                 "message" => "Action not allowed"
             ], 401);
-        }
-
-        $likedPosts = $accessTokenUser->likedPosts->toArray();
-        $likedPostsIds = [];
-
-        foreach($likedPosts as $onePost){
-            array_push($likedPostsIds, $onePost["id"]);
-        }
-
-        if($request->likes && !in_array($post->id, $likedPostsIds)){
-            $post->likes += 1;
-            $accessTokenUser->likedPosts()->attach($post->id);      
         }
 
         if(isset($request->image)){
@@ -170,6 +155,68 @@ class PostController extends Controller
             "post" => [
                 "id"=> $post->id,
             ]
+        ]);
+    }
+
+    /**
+     * @api {patch} /post/like/:id Like or unlike post
+     * @apiDescription Liking a post
+     * @apiParam {Number} id Id of the post to be liked
+     * @apiGroup Post
+     * @apiUse HeadersWithToken
+     * @apiBody {Boolean="true", "false"} likes Wether to like or unlike a post
+     * @apiError Unauthenticated User making the request is not logged in or has outdated access token.
+     * @apiError TheLikesFieldMustBeTrueOrFalse <code>likes</code> field must be a boolean value
+     * @apiErrorExample {json} Error-Response:
+     *     HTTP/1.1 422 Unprocessable Content
+     *      {
+     *          "message": "Unauthenticated."
+     *      }
+     * @apiPermission normal user
+     * @apiSuccess {String} message Information about the liking procedure.
+     * @apiSuccessExample {json} Success-Response:
+     *    HTTP/1.1 200 OK
+     *      {
+     *          "message": "Post liked successfully"
+     *      }
+     *    @apiVersion 0.3.0
+     */
+
+    public function likePost(Request $request, $id){
+        $request->validate([
+            "likes" => "required|boolean"
+        ]);
+
+        $accessTokenUser = PersonalAccessToken::findToken($request->bearerToken())->tokenable;
+        $post = Post::findOrFail($id);
+
+        $likedPosts = $accessTokenUser->likedPosts->toArray();
+        $likedPostsIds = [];
+
+        foreach($likedPosts as $onePost){
+            array_push($likedPostsIds, $onePost["id"]);
+        }
+
+        $responseMessage = "";
+
+        if($request->likes && !in_array($post->id, $likedPostsIds)){
+            $post->likes += 1;
+            $accessTokenUser->likedPosts()->attach($post->id);
+            
+            $responseMessage = "Post liked successfully";
+        }
+        else if($request->likes == false && in_array($post->id, $likedPostsIds)){
+            $post->likes -= 1;
+            $accessTokenUser->likedPosts()->detach($post->id);
+
+            $responseMessage = "Unliked successfully";
+        }
+        else{
+            $responseMessage = "Post is already liked or already unliked";
+        }
+
+        return response()->json([
+            "message" => $responseMessage
         ]);
     }
 
@@ -348,42 +395,43 @@ class PostController extends Controller
      * @apiSuccess (Success-Normal user) {Number} post.data.likes Post's number of <code>likes</code>.
      * @apiSuccess (Success-Normal user) {Date} post.data.created_at When the <code>post</code> was created.
      * @apiSuccess (Success-Normal user) {Date} post.data.modified_at When the <code>post</code> was last modified.
+     * @apiSuccess (Success-Normal user) {Array} likedPosts Ids of the user's liked posts.
      * 
      * @apiSuccess (Success-Admin user (fields returned in addition to the normal user fields)) {Object} post Data of the requested post
      * @apiSuccess (Success-Admin user (fields returned in addition to the normal user fields)) {Date} post.deleted_at When the post was deleted
      * @apiSuccessExample {json} Success-Response:
      *    HTTP/1.1 200 OK
-     *       {
+     *      {
      *          "posts": {
      *              "current_page": 1,
      *              "data": [
      *                  {
-     *                      "id": 1,
-     *                      "post": "Alice desperately: 'he's perfectly idiotic!' And.",
-     *                      "likes": 1774,
-     *                      "created_at": "2024-11-05T11:49:15.000000Z",
-     *                      "updated_at": "2024-11-05T11:49:15.000000Z"
+     *                      "id": 6,
+     *                      "post": "Gryphon. '--you advance twice--' 'Each with a.",
+     *                      "likes": 884,
+     *                      "created_at": "2024-11-23T13:19:26.000000Z",
+     *                      "updated_at": "2024-11-23T13:19:26.000000Z"
      *                  },
      *                  {
-     *                      "id": 2,
-     *                      "post": "These were the verses the White Rabbit, who said.",
-     *                      "likes": 2597,
-     *                      "created_at": "2024-11-05T11:49:15.000000Z",
-     *                      "updated_at": "2024-11-05T11:49:15.000000Z"
+     *                      "id": 7,
+     *                      "post": "I should be like then?' And she went round the.",
+     *                      "likes": 345,
+     *                      "created_at": "2024-11-23T13:19:26.000000Z",
+     *                      "updated_at": "2024-11-23T13:19:26.000000Z"
      *                  },
      *                  ...
      *                  {
-     *                      "id": 12,
-     *                      "post": "What a nice gentleman :)",
-     *                      "likes": 0,
-     *                      "created_at": "2024-12-03T09:07:46.000000Z",
-     *                      "updated_at": "2024-12-03T09:58:12.000000Z"
+     *                      "id": 35,
+     *                      "post": "And I declare it's too bad, that it was indeed.",
+     *                      "likes": 1260,
+     *                      "created_at": "2024-12-05T18:01:27.000000Z",
+     *                      "updated_at": "2024-12-05T18:01:27.000000Z"
      *                  }
      *              ],
      *              "first_page_url": "http://localhost:8000/api/post/id/asc?page=1",
      *              "from": 1,
-     *              "last_page": 1,
-     *              "last_page_url": "http://localhost:8000/api/post/id/asc?page=1",
+     *              "last_page": 4,
+     *              "last_page_url": "http://localhost:8000/api/post/id/asc?page=4",
      *              "links": [
      *                  {
      *                      "url": null,
@@ -396,26 +444,46 @@ class PostController extends Controller
      *                      "active": true
      *                  },
      *                  {
-     *                      "url": null,
+     *                      "url": "http://localhost:8000/api/post/id/asc?page=2",
+     *                      "label": "2",
+     *                      "active": false
+     *                  },
+     *                  {
+     *                      "url": "http://localhost:8000/api/post/id/asc?page=3",
+     *                      "label": "3",
+     *                      "active": false
+     *                  },
+     *                  {
+     *                      "url": "http://localhost:8000/api/post/id/asc?page=4",
+     *                      "label": "4",
+     *                      "active": false
+     *                  },
+     *                  {
+     *                      "url": "http://localhost:8000/api/post/id/asc?page=2",
      *                      "label": "Next &raquo;",
      *                      "active": false
      *                  }
      *              ],
-     *              "next_page_url": null,
+     *              "next_page_url": "http://localhost:8000/api/post/id/asc?page=2",
      *              "path": "http://localhost:8000/api/post/id/asc",
      *              "per_page": 30,
      *              "prev_page_url": null,
-     *              "to": 12,
-     *              "total": 12
-     *          }
+     *              "to": 30,
+     *              "total": 108
+     *          },
+     *          "likedPosts": [
+     *              100,
+     *              98
+     *          ]
      *      }
-     *    @apiVersion 0.2.0
+     *    @apiVersion 0.3.0
      */
 
     public function getAllPosts(Request $request, $sortByStr, $sortDirStr){
         $sortBy = request()->query("sort_by", $sortByStr);
         $sortDir = request()->query("sort_dir", $sortDirStr);
         $accessToken = PersonalAccessToken::findToken($request->bearerToken())->abilities;
+        $accessTokenUser = PersonalAccessToken::findToken($request->bearerToken())->tokenable;
         if(in_array("view-all", $accessToken) || in_array("*", $accessToken)){
             $posts = Post::withTrashed()->select([
                 "id",
@@ -436,8 +504,15 @@ class PostController extends Controller
             ])->orderBy($sortBy, $sortDir)->paginate(30);
         }
 
+        $likedPosts = $accessTokenUser->likedPosts;
+        $likedPostIds = [];
+        foreach ($likedPosts as $likedPost){
+            array_push($likedPostIds,$likedPost->id);
+        }
+
         return response()->json([
-            "posts" => $posts
+            "posts" => $posts,
+            "likedPosts" => $likedPostIds
         ]);
            
     }
@@ -465,6 +540,7 @@ class PostController extends Controller
      * @apiSuccess (Success-Normal user) {Number} post.data.likes Number of <code>likes</code> on the post.
      * @apiSuccess (Success-Normal user) {Date} post.data.created_at When the <code>post</code> was created.
      * @apiSuccess (Success-Normal user) {Date} post.data.modified_at When the <code>post</code> was last modified.
+     * @apiSuccess (Success-Normal user) {Array} likedPosts Ids of the user's liked posts.
      * 
      * @apiSuccess (Success-Admin user (fields returned in addition to the normal user fields)) {Object} post Data of the requested post
      * @apiSuccess (Success-Admin user (fields returned in addition to the normal user fields)) {Date} post.deleted_at When the post was deleted
@@ -475,24 +551,32 @@ class PostController extends Controller
      *              "current_page": 1,
      *              "data": [
      *                  {
-     *                      "id": 5,
-     *                      "post": "Alice: 'allow me to him: She gave me a good.",
-     *                      "likes": 295,
-     *                      "created_at": "2024-11-05T11:49:15.000000Z",
-     *                      "updated_at": "2024-11-05T11:49:15.000000Z"
+     *                      "id": 90,
+     *                      "post": "SOMEBODY ought to tell him. 'A nice muddle their.",
+     *                      "likes": 425,
+     *                      "created_at": "2024-12-05T18:01:29.000000Z",
+     *                      "updated_at": "2024-12-05T18:01:29.000000Z"
      *                  },
      *                  {
-     *                      "id": 8,
-     *                      "post": "I didn't know that you're mad?' 'To begin with,'.",
-     *                      "likes": 1882,
-     *                      "created_at": "2024-11-05T11:49:15.000000Z",
-     *                      "updated_at": "2024-11-05T11:49:15.000000Z"
+     *                      "id": 91,
+     *                      "post": "What happened to me! I'LL soon make you grow.",
+     *                      "likes": 772,
+     *                      "created_at": "2024-12-05T18:01:29.000000Z",
+     *                      "updated_at": "2024-12-05T18:01:29.000000Z"
+     *                  },
+     *                  ...
+     *                  {
+     *                      "id": 48,
+     *                      "post": "Alice, always ready to agree to everything that.",
+     *                      "likes": 2918,
+     *                      "created_at": "2024-12-05T18:01:27.000000Z",
+     *                      "updated_at": "2024-12-05T18:01:27.000000Z"
      *                  }
      *              ],
      *              "first_page_url": "http://localhost:8000/api/post/search/created_at/desc/to?page=1",
      *              "from": 1,
-     *              "last_page": 1,
-     *              "last_page_url": "http://localhost:8000/api/post/search/created_at/desc/to?page=1",
+     *              "last_page": 2,
+     *              "last_page_url": "http://localhost:8000/api/post/search/created_at/desc/to?page=2",
      *              "links": [
      *                  {
      *                      "url": null,
@@ -505,26 +589,36 @@ class PostController extends Controller
      *                      "active": true
      *                  },
      *                  {
-     *                      "url": null,
+     *                      "url": "http://localhost:8000/api/post/search/created_at/desc/to?page=2",
+     *                      "label": "2",
+     *                      "active": false
+     *                  },
+     *                  {
+     *                      "url": "http://localhost:8000/api/post/search/created_at/desc/to?page=2",
      *                      "label": "Next &raquo;",
      *                      "active": false
      *                  }
      *              ],
-     *              "next_page_url": null,
+     *              "next_page_url": "http://localhost:8000/api/post/search/created_at/desc/to?page=2",
      *              "path": "http://localhost:8000/api/post/search/created_at/desc/to",
      *              "per_page": 30,
      *              "prev_page_url": null,
-     *              "to": 2,
-     *              "total": 2
-     *          }
+     *              "to": 30,
+     *              "total": 35
+     *          },
+     *          "likedPosts": [
+     *              100,
+     *              98
+     *          ]
      *      }
-     *    @apiVersion 0.2.0
+     *    @apiVersion 0.3.0
      */
 
     public function searchPosts(Request $request, $sortByStr, $sortDirStr, $search){
         $sortBy = request()->query("sort_by", $sortByStr);
         $sortDir = request()->query("sort_dir", $sortDirStr);
         $accessToken = PersonalAccessToken::findToken($request->bearerToken())->abilities;
+        $accessTokenUser = PersonalAccessToken::findToken($request->bearerToken())->tokenable;
         if(in_array("view-all", $accessToken) || in_array("*", $accessToken)){
             $posts = Post::withTrashed()->select([
                 "id",
@@ -545,8 +639,15 @@ class PostController extends Controller
             ])->where("post", "LIKE", "%".$search."%")->orderBy($sortBy, $sortDir)->paginate(30);
         }
 
+        $likedPosts = $accessTokenUser->likedPosts;
+        $likedPostIds = [];
+        foreach ($likedPosts as $likedPost){
+            array_push($likedPostIds,$likedPost->id);
+        }
+
         return response()->json([
-            "posts" => $posts
+            "posts" => $posts,
+            "likedPosts" => $likedPostIds
         ]);
            
     }

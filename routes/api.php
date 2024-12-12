@@ -23,6 +23,7 @@ Route::get("/user/search/{sortByStr}/{sortDirStr}/{search}", [UserController::cl
 //Post routes
 Route::post("/post", [PostController::class,"create"])->middleware(["auth:sanctum","abilities:post-create"]);
 Route::patch("/post/{id}", [PostController::class,"update"])->middleware(["auth:sanctum","abilities:post-update"]);
+Route::patch("/post/like/{id}", [PostController::class,"likePost"])->middleware(["auth:sanctum","abilities:post-update"]);
 Route::delete("/post/{id}", [PostController::class,"delete"])->middleware(["auth:sanctum","abilities:post-delete"]);
 Route::get("/post/{id}", [PostController::class,"getPostData"])->middleware(["auth:sanctum","abilities:post-view"]);
 Route::get("/post/{sortByStr}/{sortDirStr}", [PostController::class,"getAllPosts"])->middleware(["auth:sanctum","abilities:post-view"]);

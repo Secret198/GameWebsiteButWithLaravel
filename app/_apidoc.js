@@ -486,3 +486,208 @@
      *       }
      *    @apiVersion 0.1.0
      */
+
+     /**
+     * @api {patch} /post/:id Post update
+     * @apiDescription Updating posts, normal users can only update their own posts, while admins can update everyone's
+     * @apiParam {Number} id Id of the post to be updated
+     * @apiGroup Post
+     * @apiUse HeadersWithToken
+     * @apiBody {String{min:10 - max:65534}} [post] Text of the new post
+     * @apiBody {String{max: 500KB}} [image] Base64 encoded image for the new post
+     * @apiBody {Boolean} [likes] Wether we would like to like the post or not
+     * @apiError Unauthenticated User making the request is not logged in or has outdated access token.
+     * @apiError ThePostFieldMustBeAtLeast10Characters <code>post</code> must be at least 10 characters.
+     * @apiError ThePostFieldMustNotBeGreaterThan65534Characters. <code>post</code> must be below 65534 characters.
+     * @apiError TheImageMustBeOfTypeJpeg,jpg,png <code>image</code> must be of type jpeg, jpg, png
+     * @apiError NoQueryResultsForModel:id Post with <code>id</code> could not be found
+     * @apiError TheLikesFieldMustBeTrueOrFalse <code>likes</code> field must be a boolean value
+     * @apiErrorExample {json} Error-Response:
+     *     HTTP/1.1 422 Unprocessable Content
+     *       {
+     *           "message": "The post field must be at least 10 characters.",
+     *           "errors": {
+     *               "post": [
+     *                   "The post field must be at least 10 characters."
+     *               ]
+     *           }
+     *       }
+     * @apiPermission normal user
+     * @apiSuccess {String} message Information about the post update.
+     * @apiSuccess {Object} post Data of the updated post.
+     * @apiSuccess {Number} post.id <code>id</code> of the updated post.
+     * @apiSuccessExample {json} Success-Response:
+     *    HTTP/1.1 200 OK
+     *       {
+     *           "message": "Post updated successfully",
+     *           "post": {
+     *               "id": 3
+     *           }
+     *       }
+     *    @apiVersion 0.2.0
+     */
+
+     /**
+     * @api {get} /post/:sort_by/:sort_dir Get all posts
+     * @apiDescription Getting all posts, admin users get additional fields returned in the response, compared to normal users
+     * @apiParam {String} sort_by Field the result is sorted by
+     * @apiParam {String="asc","desc"} sort_dir Sort direction
+     * @apiGroup Post
+     * @apiUse HeadersWithToken
+     * @apiError Unauthenticated. User making the request is not logged in or has outdated access token.
+     * @apiErrorExample {json} Error-Response:
+     *     HTTP/1.1 401 Unathorized
+     *       {
+     *           "message": "Unauthenticated,"
+     *       }
+     * @apiPermission normal user
+     * @apiSuccess (Success-Normal user) {Object} posts Data of the posts.
+     * @apiSuccess (Success-Normal user) {Number} post.current_page Current page of the pagination.
+     * @apiSuccess (Success-Normal user) {Object} post.data Array of all the post data.
+     * @apiSuccess (Success-Normal user) {id} post.data.id Post's <code>id</code>.
+     * @apiSuccess (Success-Normal user) {String} post.data.post Post's text.
+     * @apiSuccess (Success-Normal user) {Number} post.data.likes Post's number of <code>likes</code>.
+     * @apiSuccess (Success-Normal user) {Date} post.data.created_at When the <code>post</code> was created.
+     * @apiSuccess (Success-Normal user) {Date} post.data.modified_at When the <code>post</code> was last modified.
+     * 
+     * @apiSuccess (Success-Admin user (fields returned in addition to the normal user fields)) {Object} post Data of the requested post
+     * @apiSuccess (Success-Admin user (fields returned in addition to the normal user fields)) {Date} post.deleted_at When the post was deleted
+     * @apiSuccessExample {json} Success-Response:
+     *    HTTP/1.1 200 OK
+     *       {
+     *          "posts": {
+     *              "current_page": 1,
+     *              "data": [
+     *                  {
+     *                      "id": 1,
+     *                      "post": "Alice desperately: 'he's perfectly idiotic!' And.",
+     *                      "likes": 1774,
+     *                      "created_at": "2024-11-05T11:49:15.000000Z",
+     *                      "updated_at": "2024-11-05T11:49:15.000000Z"
+     *                  },
+     *                  {
+     *                      "id": 2,
+     *                      "post": "These were the verses the White Rabbit, who said.",
+     *                      "likes": 2597,
+     *                      "created_at": "2024-11-05T11:49:15.000000Z",
+     *                      "updated_at": "2024-11-05T11:49:15.000000Z"
+     *                  },
+     *                  ...
+     *                  {
+     *                      "id": 12,
+     *                      "post": "What a nice gentleman :)",
+     *                      "likes": 0,
+     *                      "created_at": "2024-12-03T09:07:46.000000Z",
+     *                      "updated_at": "2024-12-03T09:58:12.000000Z"
+     *                  }
+     *              ],
+     *              "first_page_url": "http://localhost:8000/api/post/id/asc?page=1",
+     *              "from": 1,
+     *              "last_page": 1,
+     *              "last_page_url": "http://localhost:8000/api/post/id/asc?page=1",
+     *              "links": [
+     *                  {
+     *                      "url": null,
+     *                      "label": "&laquo; Previous",
+     *                      "active": false
+     *                  },
+     *                  {
+     *                      "url": "http://localhost:8000/api/post/id/asc?page=1",
+     *                      "label": "1",
+     *                      "active": true
+     *                  },
+     *                  {
+     *                      "url": null,
+     *                      "label": "Next &raquo;",
+     *                      "active": false
+     *                  }
+     *              ],
+     *              "next_page_url": null,
+     *              "path": "http://localhost:8000/api/post/id/asc",
+     *              "per_page": 30,
+     *              "prev_page_url": null,
+     *              "to": 12,
+     *              "total": 12
+     *          }
+     *      }
+     *    @apiVersion 0.2.0
+     */
+
+     /**
+     * @api {get} /post/search/:sort_by/:sort_dir/:search_for Search for posts
+     * @apiDescription Search for posts, admin users get additional fields returned in the response, compared to normal users
+     * @apiParam {String} sort_by Field the result is sorted by
+     * @apiParam {String="asc","desc"} sort_dir Sort direction
+     * @apiParam {String} search_for Keyword to search for
+     * @apiGroup Post
+     * @apiUse HeadersWithToken
+     * @apiError Unauthenticated. User making the request is not logged in or has outdated access token.
+     * @apiErrorExample {json} Error-Response:
+     *     HTTP/1.1 401 Unathorized
+     *       {
+     *           "message": "Unauthenticated,"
+     *       }
+     * @apiPermission normal user
+     * @apiSuccess (Success-Normal user) {Object} posts Data of the posts.
+     * @apiSuccess (Success-Normal user) {Number} post.current_page Current page of the pagination.
+     * @apiSuccess (Success-Normal user) {Object} post.data Array of all the post data.
+     * @apiSuccess (Success-Normal user) {id} post.data.id Post's <code>id</code>.
+     * @apiSuccess (Success-Normal user) {String} post.data.post Post's text.
+     * @apiSuccess (Success-Normal user) {Number} post.data.likes Number of <code>likes</code> on the post.
+     * @apiSuccess (Success-Normal user) {Date} post.data.created_at When the <code>post</code> was created.
+     * @apiSuccess (Success-Normal user) {Date} post.data.modified_at When the <code>post</code> was last modified.
+     * 
+     * @apiSuccess (Success-Admin user (fields returned in addition to the normal user fields)) {Object} post Data of the requested post
+     * @apiSuccess (Success-Admin user (fields returned in addition to the normal user fields)) {Date} post.deleted_at When the post was deleted
+     * @apiSuccessExample {json} Success-Response:
+     *    HTTP/1.1 200 OK
+     *      {
+     *          "posts": {
+     *              "current_page": 1,
+     *              "data": [
+     *                  {
+     *                      "id": 5,
+     *                      "post": "Alice: 'allow me to him: She gave me a good.",
+     *                      "likes": 295,
+     *                      "created_at": "2024-11-05T11:49:15.000000Z",
+     *                      "updated_at": "2024-11-05T11:49:15.000000Z"
+     *                  },
+     *                  {
+     *                      "id": 8,
+     *                      "post": "I didn't know that you're mad?' 'To begin with,'.",
+     *                      "likes": 1882,
+     *                      "created_at": "2024-11-05T11:49:15.000000Z",
+     *                      "updated_at": "2024-11-05T11:49:15.000000Z"
+     *                  }
+     *              ],
+     *              "first_page_url": "http://localhost:8000/api/post/search/created_at/desc/to?page=1",
+     *              "from": 1,
+     *              "last_page": 1,
+     *              "last_page_url": "http://localhost:8000/api/post/search/created_at/desc/to?page=1",
+     *              "links": [
+     *                  {
+     *                      "url": null,
+     *                      "label": "&laquo; Previous",
+     *                      "active": false
+     *                  },
+     *                  {
+     *                      "url": "http://localhost:8000/api/post/search/created_at/desc/to?page=1",
+     *                      "label": "1",
+     *                      "active": true
+     *                  },
+     *                  {
+     *                      "url": null,
+     *                      "label": "Next &raquo;",
+     *                      "active": false
+     *                  }
+     *              ],
+     *              "next_page_url": null,
+     *              "path": "http://localhost:8000/api/post/search/created_at/desc/to",
+     *              "per_page": 30,
+     *              "prev_page_url": null,
+     *              "to": 2,
+     *              "total": 2
+     *          }
+     *      }
+     *    @apiVersion 0.2.0
+     */
