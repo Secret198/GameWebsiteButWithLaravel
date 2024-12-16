@@ -691,3 +691,90 @@
      *      }
      *    @apiVersion 0.2.0
      */
+
+        /**
+     * @api {get} /user/:sort_by/:sort_dir Get user's own posts
+     * @apiDescription Getting the user's own posts, admin users can view their deleted posts as well
+     * @apiParam {String} sort_by Field to be used to order the posts by
+     * @apiParam {String="asc","desc"} sort_dir Order direction for the posts
+     * @apiGroup User
+     * @apiUse HeadersWithToken
+     * @apiError Unauthenticated. User making the request is not logged in or has outdated access token.
+     * @apiErrorExample {json} Error-Response:
+     *     HTTP/1.1 401 Unathorized
+     *       {
+     *           "message": "Unauthenticated,"
+     *       }
+     * @apiPermission normal user
+     * @apiSuccess (Success-Normal user) {Object} posts Data of all the posts of the logged in user.
+     * @apiSuccess (Success-Normal user) {Number} posts.current_page Current page of the pagination.
+     * @apiSuccess (Success-Normal user) {Object} posts.data Data of the returnded posts.
+     * @apiSuccess (Success-Normal user) {Number} posts.data.id Post <code>id</code>.
+     * @apiSuccess (Success-Normal user) {String} posts.data.post Text of the post.
+     * @apiSuccess (Success-Normal user) {Date} posts.data.created_at When the post was created.
+     * @apiSuccess (Success-Normal user) {Date} posts.data.updated_at When the post was last updated.
+     * 
+     * @apiSuccess (Success-Admin user (fields returned in addition to the normal user fields)) {Object} data Data of all the posts of the logged in user user.
+     * @apiSuccess (Success-Admin user (fields returned in addition to the normal user fields)) {Date} posts.data.deleted_at When the post was deleted
+     * @apiSuccessExample {json} Success-Response:
+     *    HTTP/1.1 200 OK
+     *       {
+     *           "posts": {
+     *               "current_page": 1,
+     *               "data": [
+     *                   {
+     *                       "id": 1,
+     *                       "post": "Alice desperately: 'he's perfectly idiotic!' And.",
+     *                       "created_at": "2024-11-05T11:49:15.000000Z",
+     *                       "updated_at": "2024-11-05T11:49:15.000000Z",
+     *                   },
+     *                   {
+     *                       "id": 2,
+     *                       "post": "These were the verses the White Rabbit, who said.",
+     *                       "created_at": "2024-11-05T11:49:15.000000Z",
+     *                       "updated_at": "2024-11-05T11:49:15.000000Z",
+     *                   },
+     *                   {
+     *                       "id": 3,
+     *                       "post": "Alice's side as she fell past it. 'Well!'.",
+     *                       "created_at": "2024-11-05T11:49:15.000000Z",
+     *                       "updated_at": "2024-11-05T11:49:15.000000Z",
+     *                   },
+     *                   {
+     *                       "id": 10,
+     *                       "post": "Alice had no pictures or conversations in it.",
+     *                       "created_at": "2024-11-05T11:49:15.000000Z",
+     *                       "updated_at": "2024-11-05T11:49:15.000000Z",
+     *                   }
+     *               ],
+     *               "first_page_url": "http://localhost:8000/api/user/id/asc?page=1",
+     *               "from": 1,
+     *               "last_page": 1,
+     *               "last_page_url": "http://localhost:8000/api/user/id/asc?page=1",
+     *               "links": [
+     *                   {
+     *                       "url": null,
+     *                       "label": "&laquo; Previous",
+     *                       "active": false
+     *                   },
+     *                   {
+     *                       "url": "http://localhost:8000/api/user/id/asc?page=1",
+     *                       "label": "1",
+     *                       "active": true
+     *                   },
+     *                   {
+     *                       "url": null,
+     *                       "label": "Next &raquo;",
+     *                       "active": false
+     *                   }
+     *               ],
+     *               "next_page_url": null,
+     *               "path": "http://localhost:8000/api/user/id/asc",
+     *               "per_page": 30,
+     *               "prev_page_url": null,
+     *               "to": 4,
+     *               "total": 4
+     *           }
+     *       }
+     *    @apiVersion 0.1.0
+     */

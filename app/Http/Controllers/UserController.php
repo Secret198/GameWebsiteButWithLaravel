@@ -686,12 +686,7 @@ class UserController extends Controller
      *                       "created_at": "2024-11-05T11:49:15.000000Z",
      *                       "updated_at": "2024-11-05T11:49:15.000000Z",
      *                   },
-     *                   {
-     *                       "id": 3,
-     *                       "post": "Alice's side as she fell past it. 'Well!'.",
-     *                       "created_at": "2024-11-05T11:49:15.000000Z",
-     *                       "updated_at": "2024-11-05T11:49:15.000000Z",
-     *                   },
+     *                   ...
      *                   {
      *                       "id": 10,
      *                       "post": "Alice had no pictures or conversations in it.",
@@ -727,8 +722,12 @@ class UserController extends Controller
      *               "to": 4,
      *               "total": 4
      *           }
+     *           "likedPosts": [
+     *               11,
+     *               10 
+     *           ]
      *       }
-     *    @apiVersion 0.1.0
+     *    @apiVersion 0.3.0
      */
 
     public function getOwnPosts(Request $request, $sortByStr, $sortDirStr){
@@ -757,8 +756,15 @@ class UserController extends Controller
             ])->where("user_id", $userId)->orderBy($sortBy, $sortDir)->paginate(30);
         }
 
+        $likedPosts = $token->tokenable->likedPosts;
+        $likedPostIds = [];
+        foreach ($likedPosts as $likedPost){
+            array_push($likedPostIds,$likedPost->id);
+        }
+
         return response()->json([
-            "posts" => $posts
+            "posts" => $posts,
+            "likedPosts" => $likedPostIds
         ]);
            
     }
