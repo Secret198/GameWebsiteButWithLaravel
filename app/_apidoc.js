@@ -778,3 +778,88 @@
      *       }
      *    @apiVersion 0.1.0
      */
+
+         /**
+     * @api {post} /achievement Achievement creation
+     * @apiGroup Achievement
+     * @apiUse HeadersWithToken
+     * @apiBody {String} name Name of the achievement
+     * @apiBody {String} field The column name from the user table when handing out the achievement
+     * @apiBody {Number} threshold The amount that has to reached to be awarded the achievement
+     * @apiBody {String} description The description of the achievement
+     * @apiError Unauthenticated User making the request is not logged in or has outdated access token.
+     * @apiError TheNameFieldIsRequired The <code>name</code> field is required
+     * @apiError TheFieldFieldIsRequired The <code>field</code> field is required
+     * @apiError TheThresholdFieldIsRequired The <code>threshold</code> field is required
+     * @apiError TheThresholdFieldIsMustBeANumber The <code>threshold</code> field must be a number
+     * @apiError TheDescriptionFieldIsRequired The <code>description</code> field is required
+     * @apiError InvalidAbilityProvided The user is not authorized to create achievements
+     * @apiErrorExample {json} Error-Response:
+     *     HTTP/1.1 422 Unprocessable Content
+     *       {
+     *           "message": "The field field is required. (and 2 more errors)",
+     *           "errors": {
+     *               "field": [
+     *                   "The field field is required."
+     *               ],
+     *               "threshold": [
+     *                   "The threshold field is required."
+     *               ],
+     *               "description": [
+     *                   "The description field is required."
+     *               ]
+     *           }
+     *       }
+     * @apiPermission admin
+     * @apiSuccess {String} message Information about the achievement creation.
+     * @apiSuccess {Object} achievement Data of the newly created achievement.
+     * @apiSuccess {Number} achievement.id <code>id</code> of the new achievement.
+     * @apiSuccess {String} achievement.name <code>name</code> of the new achievement.
+     *    @apiSuccessExample {json} Success-Response:
+     *    HTTP/1.1 200 OK
+     *       {
+     *           "message": "Achievement created successfully",
+     *           "post": {
+     *               "id": 11
+     *           }
+     *       }
+     *    @apiVersion 0.1.0
+     */
+
+         /**
+     * @api {patch} /achievement/:id Achievement update
+     * @apiParam {Number} id Id of achievement to be updated
+     * @apiGroup Achievement
+     * @apiUse HeadersWithToken
+     * @apiBody {String} [name] Name of the achievement
+     * @apiBody {String} [field] The column name from the user table when handing out the achievement
+     * @apiBody {Number} [threshold] The amount that has to reached to be awarded the achievement
+     * @apiBody {String} [description] The description of the achievement
+     * @apiError Unauthenticated User making the request is not logged in or has outdated access token.
+     * @apiError TheThresholdFieldIsMustBeANumber The <code>threshold</code> field must be a number
+     * @apiError InvalidAbilityProvided The user is not authorized to update achievements
+     * @apiError NoQueryResultsForModel:id Achievement with <code>id</code> could not be found
+     * @apiErrorExample {json} Error-Response:
+     *     HTTP/1.1 422 Unprocessable Content
+     *       {
+     *           "message": "The threshold field must be a number.",
+     *           "errors": {
+     *               "threshold": [
+     *                   "The threshold field must be a number."
+     *               ]
+     *           }
+     *       }
+     * @apiPermission admin
+     * @apiSuccess {String} message Information about the achievement update.
+     * @apiSuccess {Object} achievement Data of the updated achievement.
+     * @apiSuccess {Number} achievement.id <code>id</code> of the updated achievement.
+     *    @apiSuccessExample {json} Success-Response:
+     *    HTTP/1.1 200 OK
+     *       {
+     *           "message": "Achievement updated successfully",
+     *           "achievement": {
+     *               "id": 10
+     *           }
+     *       }
+     *    @apiVersion 0.1.0
+     */

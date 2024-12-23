@@ -14,7 +14,7 @@ class AchievementController extends Controller
      * @apiUse HeadersWithToken
      * @apiBody {String} name Name of the achievement
      * @apiBody {String} field The column name from the user table when handing out the achievement
-     * @apiBody {Number} threshold The amount that has to reached to be awarded the achievement
+     * @apiBody {Number{min: 0}} threshold The amount that has to reached to be awarded the achievement
      * @apiBody {String} description The description of the achievement
      * @apiError Unauthenticated User making the request is not logged in or has outdated access token.
      * @apiError TheNameFieldIsRequired The <code>name</code> field is required
@@ -23,6 +23,7 @@ class AchievementController extends Controller
      * @apiError TheThresholdFieldIsMustBeANumber The <code>threshold</code> field must be a number
      * @apiError TheDescriptionFieldIsRequired The <code>description</code> field is required
      * @apiError InvalidAbilityProvided The user is not authorized to create achievements
+     * @apiError TheThresholdFieldMustBeAtLeast0. The <code>threshold</code> must be larger than 0
      * @apiErrorExample {json} Error-Response:
      *     HTTP/1.1 422 Unprocessable Content
      *       {
@@ -52,14 +53,14 @@ class AchievementController extends Controller
      *               "id": 11
      *           }
      *       }
-     *    @apiVersion 0.1.0
+     *    @apiVersion 0.3.0
      */
 
     public function create(Request $request){
         $request->validate([
             "name" => "required",
             "field" => "required",
-            "threshold" => "required|numeric",
+            "threshold" => "required|numeric|min:0",
             "description" => "required"
         ]);
 
@@ -85,13 +86,14 @@ class AchievementController extends Controller
      * @apiUse HeadersWithToken
      * @apiBody {String} [name] Name of the achievement
      * @apiBody {String} [field] The column name from the user table when handing out the achievement
-     * @apiBody {Number} [threshold] The amount that has to reached to be awarded the achievement
+     * @apiBody {Number{min: 0}} [threshold] The amount that has to reached to be awarded the achievement
      * @apiBody {String} [description] The description of the achievement
      * @apiError Unauthenticated User making the request is not logged in or has outdated access token.
      * @apiError TheThresholdFieldIsMustBeANumber The <code>threshold</code> field must be a number
      * @apiError InvalidAbilityProvided The user is not authorized to update achievements
      * @apiError NoQueryResultsForModel:id Achievement with <code>id</code> could not be found
-     * @apiErrorExample {json} Error-Response:
+     * @apiError TheThresholdFieldMustBeAtLeast0. The <code>threshold</code> must be larger than 0
+     *  @apiErrorExample {json} Error-Response:
      *     HTTP/1.1 422 Unprocessable Content
      *       {
      *           "message": "The threshold field must be a number.",
@@ -113,14 +115,14 @@ class AchievementController extends Controller
      *               "id": 10
      *           }
      *       }
-     *    @apiVersion 0.1.0
+     *    @apiVersion 0.3.0
      */
 
     public function update(Request $request, $id){
         $request->validate([
             "name" => "nullable",
             "field" => "nullable",
-            "threshold" => "nullable|numeric",
+            "threshold" => "nullable|numeric|min:0",
             "description" => "nullable"
         ]);
 
