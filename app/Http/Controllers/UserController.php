@@ -663,10 +663,12 @@ class UserController extends Controller
      * @apiSuccess (Success-Normal user) {Object} posts.data Data of the returnded posts.
      * @apiSuccess (Success-Normal user) {Number} posts.data.id Post <code>id</code>.
      * @apiSuccess (Success-Normal user) {String} posts.data.post Text of the post.
+     * @apiSuccess (Success-Normal user) {Number} posts.data.likes Number of likes on the post.
      * @apiSuccess (Success-Normal user) {Date} posts.data.created_at When the post was created.
      * @apiSuccess (Success-Normal user) {Date} posts.data.updated_at When the post was last updated.
+     * @apiSuccess (Success-Normal user) {Array} likedPosts Ids of the user's liked posts.
      * 
-     * @apiSuccess (Success-Admin user (fields returned in addition to the normal user fields)) {Object} data Data of all the posts of the logged in user user.
+     * @apiSuccess (Success-Admin user (fields returned in addition to the normal user fields)) {Object} data Data of all the posts of the logged in user.
      * @apiSuccess (Success-Admin user (fields returned in addition to the normal user fields)) {Date} posts.data.deleted_at When the post was deleted
      * @apiSuccessExample {json} Success-Response:
      *    HTTP/1.1 200 OK
@@ -677,12 +679,14 @@ class UserController extends Controller
      *                   {
      *                       "id": 1,
      *                       "post": "Alice desperately: 'he's perfectly idiotic!' And.",
+     *                       "likes": 1796,
      *                       "created_at": "2024-11-05T11:49:15.000000Z",
      *                       "updated_at": "2024-11-05T11:49:15.000000Z",
      *                   },
      *                   {
      *                       "id": 2,
      *                       "post": "These were the verses the White Rabbit, who said.",
+     *                       "likes": 1796,
      *                       "created_at": "2024-11-05T11:49:15.000000Z",
      *                       "updated_at": "2024-11-05T11:49:15.000000Z",
      *                   },
@@ -690,6 +694,7 @@ class UserController extends Controller
      *                   {
      *                       "id": 10,
      *                       "post": "Alice had no pictures or conversations in it.",
+     *                       "likes": 1796,
      *                       "created_at": "2024-11-05T11:49:15.000000Z",
      *                       "updated_at": "2024-11-05T11:49:15.000000Z",
      *                   }
@@ -742,6 +747,7 @@ class UserController extends Controller
             $posts = Post::withTrashed()->select([
                 "id",
                 "post",
+                "likes",
                 "created_at",
                 "updated_at",
                 "deleted_at"
@@ -751,6 +757,7 @@ class UserController extends Controller
             $posts = Post::select([
                 "id",
                 "post",
+                "likes",
                 "created_at",
                 "updated_at",
             ])->where("user_id", $userId)->orderBy($sortBy, $sortDir)->paginate(30);
@@ -765,6 +772,140 @@ class UserController extends Controller
         return response()->json([
             "posts" => $posts,
             "likedPosts" => $likedPostIds
+        ]);
+           
+    }
+
+    /**
+     * @api {get} /user/post/search/:sort_by/:sort_dir/:search_for Search for own posts
+     * @apiDescription Search from the user's own posts, admin users can view their deleted posts as well
+     * @apiParam {String} sort_by Field to be used to order the posts by
+     * @apiParam {String="asc","desc"} sort_dir Order direction for the posts
+     * @apiParam {String} search_for Keyword to search for in user's posts
+     * @apiGroup User
+     * @apiUse HeadersWithToken
+     * @apiError Unauthenticated. User making the request is not logged in or has outdated access token.
+     * @apiErrorExample {json} Error-Response:
+     *     HTTP/1.1 401 Unathorized
+     *       {
+     *           "message": "Unauthenticated,"
+     *       }
+     * @apiPermission normal user
+     * @apiSuccess (Success-Normal user) {Object} posts Data of all the posts where the search word was found.
+     * @apiSuccess (Success-Normal user) {Number} posts.current_page Current page of the pagination.
+     * @apiSuccess (Success-Normal user) {Object} posts.data Data of the returnded posts.
+     * @apiSuccess (Success-Normal user) {Number} posts.data.id Post <code>id</code>.
+     * @apiSuccess (Success-Normal user) {String} posts.data.post Text of the post.
+     * @apiSuccess (Success-Normal user) {Number} posts.data.likes Number of likes on the post.
+     * @apiSuccess (Success-Normal user) {Date} posts.data.created_at When the post was created.
+     * @apiSuccess (Success-Normal user) {Date} posts.data.updated_at When the post was last updated.
+     * @apiSuccess (Success-Normal user) {Array} likedPosts Ids of the user's liked posts.
+     * 
+     * @apiSuccess (Success-Admin user (fields returned in addition to the normal user fields)) {Object} data Data of all the posts where the search word was found..
+     * @apiSuccess (Success-Admin user (fields returned in addition to the normal user fields)) {Date} posts.data.deleted_at When the post was deleted
+     * @apiSuccessExample {json} Success-Response:
+     *    HTTP/1.1 200 OK
+     *       {
+     *           "posts": {
+     *               "current_page": 1,
+     *               "data": [
+     *                   {
+     *                       "id": 1,
+     *                       "post": "Alice desperately: 'he's perfectly idiotic!' And.",
+     *                       "likes": 1796,
+     *                       "created_at": "2024-11-05T11:49:15.000000Z",
+     *                       "updated_at": "2024-11-05T11:49:15.000000Z",
+     *                   },
+     *                   {
+     *                       "id": 2,
+     *                       "post": "These were the verses the White Rabbit, who said.",
+     *                       "likes": 1796,
+     *                       "created_at": "2024-11-05T11:49:15.000000Z",
+     *                       "updated_at": "2024-11-05T11:49:15.000000Z",
+     *                   },
+     *                   ...
+     *                   {
+     *                       "id": 10,
+     *                       "post": "Alice had no pictures or conversations in it.",
+     *                       "likes": 1796,
+     *                       "created_at": "2024-11-05T11:49:15.000000Z",
+     *                       "updated_at": "2024-11-05T11:49:15.000000Z",
+     *                   }
+     *               ],
+     *               "first_page_url": "http://localhost:8000/api/user/id/asc?page=1",
+     *               "from": 1,
+     *               "last_page": 1,
+     *               "last_page_url": "http://localhost:8000/api/user/id/asc?page=1",
+     *               "links": [
+     *                   {
+     *                       "url": null,
+     *                       "label": "&laquo; Previous",
+     *                       "active": false
+     *                   },
+     *                   {
+     *                       "url": "http://localhost:8000/api/user/id/asc?page=1",
+     *                       "label": "1",
+     *                       "active": true
+     *                   },
+     *                   {
+     *                       "url": null,
+     *                       "label": "Next &raquo;",
+     *                       "active": false
+     *                   }
+     *               ],
+     *               "next_page_url": null,
+     *               "path": "http://localhost:8000/api/user/id/asc",
+     *               "per_page": 30,
+     *               "prev_page_url": null,
+     *               "to": 4,
+     *               "total": 4
+     *           }
+     *           "likedPosts": [
+     *               11,
+     *               10 
+     *           ]
+     *       }
+     *    @apiVersion 0.3.0
+     */
+
+    public function searchOwnPosts(Request $request, $sortByStr, $sortDirStr, $search){
+        $sortBy = request()->query("sort_by", $sortByStr);
+        $sortDir = request()->query("sort_dir", $sortDirStr);
+        $accessToken = PersonalAccessToken::findToken($request->bearerToken());
+        if(in_array("view-all", $accessToken->abilities) || in_array("*", $accessToken->abilities)){
+            $posts = Post::withTrashed()->select([
+                "id",
+                "post",
+                "likes",
+                "created_at",
+                "updated_at",
+                "deleted_at",
+            ])->where("user_id", $accessToken->tokenable->id)
+            ->where("post", "LIKE", "%".$search."%")
+            ->orderBy($sortBy, $sortDir)->paginate(30);
+        }
+        else{
+            $posts = Post::select([
+                "id",
+                "post",
+                "likes",
+                "created_at",
+                "updated_at",
+            ])->where("user_id", $accessToken->tokenable->id)
+            ->where("post", "LIKE", "%".$search."%")
+            ->orderBy($sortBy, $sortDir)->paginate(30);
+        }
+
+        $likedPosts = $accessToken->tokenable->likedPosts;
+        $likedPostIds = [];
+        foreach ($likedPosts as $likedPost){
+            array_push($likedPostIds,$likedPost->id);
+        }
+
+        return response()->json([
+            "posts" => $posts,
+            "likedPosts" => $likedPostIds
+            
         ]);
            
     }

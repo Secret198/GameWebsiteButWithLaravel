@@ -78,7 +78,9 @@ class PostController extends Controller
         //     ]);
         // }
 
-        $post->image = $post->processImage($request->image, $latestPost);
+        if($request->image){
+            $post->image = $post->processImage($request->image, $latestPost);
+        }
         $post->save();
 
         return response()->json([
@@ -214,6 +216,7 @@ class PostController extends Controller
         else{
             $responseMessage = "Post is already liked or already unliked";
         }
+        $post->save();
 
         return response()->json([
             "message" => $responseMessage
@@ -342,7 +345,12 @@ class PostController extends Controller
         $accessToken = PersonalAccessToken::findToken($request->bearerToken())->abilities;
         if(in_array("view-all", $accessToken) || in_array("*", $accessToken)){
             $post = Post::withTrashed()->findOrFail($id);
-            $image = $post->getImage();
+            if($post->image){
+                $image = $post->getImage();
+            }
+            else{
+                $image = "";
+            }
             
             $data = [
                 "id" => $post->id,
