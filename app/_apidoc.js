@@ -863,3 +863,36 @@
      *       }
      *    @apiVersion 0.1.0
      */
+
+         /**
+     * @api {get} /achievement Get all achievements
+     * @apiGroup Achievement
+     * @apiUse HeadersWithToken
+     * @apiPermission none
+     * @apiSuccess {Object} achievements Array of all the achievements.
+     * @apiSuccess {Number} achievements.id <code>id</code> of achievement.
+     * @apiSuccess {String} achievements.name <code>name</code> of achievement.
+     * @apiSuccess {String} achievements.field <code>field</code> of achievement.
+     * @apiSuccess {String} achievements.description <code>description</code> of achievement.
+     * @apiSuccess {Number} achievements.threshold <code>threshold</code> of achievement.
+     *    @apiSuccessExample {json} Success-Response:
+     *       {
+     *           "achievements": [
+     *               {
+     *                   "id": 2,
+     *                   "name": "On which.",
+     *                   "description": "Dormouse.",
+     *                   "field": "deaths",
+     *                   "threshold": 0
+     *               },
+     *               {
+     *                   "id": 3,
+     *                   "name": "Oh dear!.",
+     *                   "description": "On which.",
+     *                   "field": "boss3lvl",
+     *                   "threshold": 8
+     *               }
+     *           ]
+     *       }
+     *    @apiVersion 0.1.0
+     */

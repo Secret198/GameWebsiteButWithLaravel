@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Achievement;
 use Illuminate\Http\Request;
+use Laravel\Sanctum\PersonalAccessToken;
 
 class AchievementController extends Controller
 {
@@ -248,33 +249,46 @@ class AchievementController extends Controller
      * @apiSuccess {Object} achievements Array of all the achievements.
      * @apiSuccess {Number} achievements.id <code>id</code> of achievement.
      * @apiSuccess {String} achievements.name <code>name</code> of achievement.
-     * @apiSuccess {String} achievements.field <code>field</code> of achievement.
      * @apiSuccess {String} achievements.description <code>description</code> of achievement.
-     * @apiSuccess {Number} achievements.threshold <code>threshold</code> of achievement.
+     * 
+     * @apiSuccess (Admin (Fields returned in addition to the normal ones)) achievements.deleted_at The date when the achievement was deleted)
      *    @apiSuccessExample {json} Success-Response:
      *       {
      *           "achievements": [
-     *               {
-     *                   "id": 2,
-     *                   "name": "On which.",
-     *                   "description": "Dormouse.",
-     *                   "field": "deaths",
-     *                   "threshold": 0
-     *               },
-     *               {
-     *                   "id": 3,
-     *                   "name": "Oh dear!.",
-     *                   "description": "On which.",
-     *                   "field": "boss3lvl",
-     *                   "threshold": 8
-     *               }
+     *             {
+     *                  "id": 1,
+     *                  "name": "You shall not pass",
+     *                  "description": "eeeeeeeeeeeeeeee",
+     *              },
+     *              {
+     *                  "id": 2,
+     *                  "name": "On which.",
+     *                  "description": "Dormouse.",
+     *              },
      *           ]
      *       }
-     *    @apiVersion 0.1.0
+     *    @apiVersion 0.3.0
      */
 
-    public function getAllAchievements(){
-        $achievements = Achievement::all();
+    public function getAllAchievements(Request $request){
+        $accessToken = PersonalAccessToken::findToken($request->bearerToken());
+        if($accessToken && (in_array("achievement-delete", $accessToken->abilities) || in_array("*", $accessToken->abilities))){
+            $achievements = Achievement::withTrashed()->select([
+                    "id",
+                    "name",
+                    "description",
+                    "deleted_at"
+                ]
+            )->get();
+        }
+        else{
+            $achievements = Achievement::select([
+                    "id",
+                    "name",
+                    "description"
+                ]
+            )->get();
+        }
         return response()->json([
             "achievements" => $achievements
         ]);
