@@ -228,10 +228,7 @@ class UserController extends Controller
 
         return response()->json([
             "message" => "Admin created successfully",
-            "user"=> [
-                "id"=> $user->id,
-                "privilege" => $user->privilege,
-            ]
+            "user"=> $user
             ]);
     }
 
@@ -364,11 +361,13 @@ class UserController extends Controller
      *    @apiVersion 0.1.0
      */
 
-    public function delete($id){
+    public function delete($id){ //Update docs
+
         $user = User::findOrFail($id);        
         $user->delete();
         return response()->json([
-            "message" => "User deleted successfully"
+            "message" => "User deleted successfully",
+            "user" => $user
         ]);
     }
 
@@ -412,10 +411,7 @@ class UserController extends Controller
         $user->regenerateToken();
         return response()->json([
             "message" => "User restored successfully",
-            "user" => [
-                "id" => $user->id,
-                "privilege" => $user->privilege
-            ]
+            "user" => $user
         ]);
     }
 
@@ -491,7 +487,7 @@ class UserController extends Controller
      *    @apiVersion 0.2.0
      */
 
-    public function getUserData(Request $request, $id){
+    public function getUserData(Request $request, $id){ //update docs
         $accessToken = PersonalAccessToken::findToken($request->bearerToken())->abilities;
         if(in_array("view-all", $accessToken) || in_array("*", $accessToken)){
             $user = User::withTrashed()->findOrFail($id);
@@ -507,7 +503,7 @@ class UserController extends Controller
                 "boss3lvl" => $user->boss3lvl,
                 "deleted_at" => $user->deleted_at,
                 "created_at" => $user->created_at,
-                "modified_at" => $user->updated_at,
+                "updated_at" => $user->updated_at,
                 "privilege" => $user->privilege
             ];
         }

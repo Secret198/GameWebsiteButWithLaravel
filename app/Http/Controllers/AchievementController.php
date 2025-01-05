@@ -206,7 +206,8 @@ class AchievementController extends Controller
         $achievement = Achievement::findOrFail($id);
         $achievement->delete();
         return response()->json([
-            "message"=> "Achievement deleted successfully"
+            "message"=> "Achievement deleted successfully",
+            "achievement" => $achievement
         ]);
     }
 
@@ -237,7 +238,8 @@ class AchievementController extends Controller
         $achievement = Achievement::withTrashed()->findOrFail($id);
         $achievement->restore();
         return response()->json([
-            "message"=> "Achievement restored successfully"
+            "message"=> "Achievement restored successfully",
+            "achievement" => $achievement
         ]);
     }
 

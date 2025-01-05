@@ -216,7 +216,7 @@ class PostController extends Controller
         else{
             $responseMessage = "Post is already liked or already unliked";
         }
-        $post->save();
+        $post->saveQuietly();
 
         return response()->json([
             "message" => $responseMessage
@@ -247,7 +247,7 @@ class PostController extends Controller
      *    @apiVersion 0.1.0
      */
 
-    public function delete(Request $request, $id)
+    public function delete(Request $request, $id)//Update docs
     {
         $accessTokenUser = PersonalAccessToken::findToken($request->bearerToken())->tokenable;
         $post = Post::findOrFail($id);
@@ -258,7 +258,8 @@ class PostController extends Controller
         }
         $post->delete();
         return response()->json([
-            "message" => "Post deleted successfully"
+            "message" => "Post deleted successfully",
+            "post" => $post
         ]);
     }
 
@@ -291,15 +292,16 @@ class PostController extends Controller
      *    @apiVersion 0.1.0
      */
 
-    public function restore($id){
+    public function restore($id){ //Update docs
+
         $post = Post::withTrashed()->findOrFail($id);
+
         $post->restore();
         return response()->json([
             "message" => "Post restored successfully",
-            "post" => [
-                "id" => $post->id
-            ]
+            "post" => $post
         ]);
+        
     }
 
     /**
