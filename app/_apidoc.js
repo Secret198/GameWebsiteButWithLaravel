@@ -896,3 +896,26 @@
      *       }
      *    @apiVersion 0.1.0
      */
+
+         /**
+     * @api {delete} /user/:id Delete user
+     * @apiParam {Number} id Id of user to be deleted
+     * @apiGroup User
+     * @apiUse HeadersWithToken
+     * @apiError Unauthenticated User making the request is not logged in or has outdated access token.
+     * @apiError InvalidAbilityProvided The user is not authorized to delete users.
+     * @apiError NoQueryResultsForModel:id User with <code>id</code> could not be found
+     * @apiErrorExample {json} Error-Response:
+     *     HTTP/1.1 401 Unathorized
+     *     {
+     *       "message": "Unauthenticated."
+     *     }
+     * @apiPermission admin
+     * @apiSuccess {String} message Information about the user deletion.
+     *    @apiSuccessExample {json} Success-Response:
+     *    HTTP/1.1 200 OK
+     *     {
+     *         "message": "User deleted successfully",
+     *     }
+     *    @apiVersion 0.1.0
+     */

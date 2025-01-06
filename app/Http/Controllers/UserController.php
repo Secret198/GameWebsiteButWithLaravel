@@ -363,8 +363,12 @@ class UserController extends Controller
 
     public function delete($id){ //Update docs
 
-        $user = User::findOrFail($id);        
-        $user->delete();
+        $user = User::findOrFail($id);
+        
+        $user->timestamps = false;
+        $user->deleteQuietly();
+        $user->timestamps = true;
+
         return response()->json([
             "message" => "User deleted successfully",
             "user" => $user
@@ -407,7 +411,10 @@ class UserController extends Controller
                 "message" => "Unable to find user"
             ]);
         }
-        $user->restore();
+        $user->timestamps = false;
+        $user->restoreQuietly();
+        $user->timestamps = true;
+
         $user->regenerateToken();
         return response()->json([
             "message" => "User restored successfully",

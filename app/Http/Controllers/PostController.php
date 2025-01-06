@@ -184,7 +184,7 @@ class PostController extends Controller
      *    @apiVersion 0.3.0
      */
 
-    public function likePost(Request $request, $id){
+    public function likePost(Request $request, $id){ //Update docs
         $request->validate([
             "likes" => "required|boolean"
         ]);
@@ -216,10 +216,14 @@ class PostController extends Controller
         else{
             $responseMessage = "Post is already liked or already unliked";
         }
+
+        $post->timestamps = false;
         $post->saveQuietly();
+        $post->timestamps = true;
 
         return response()->json([
-            "message" => $responseMessage
+            "message" => $responseMessage,
+            "post" => $post
         ]);
     }
 
@@ -256,7 +260,10 @@ class PostController extends Controller
                 "message" => "Action not allowed"
             ], 401);
         }
-        $post->delete();
+        $post->timestamps = false;
+        $post->deleteQuietly();
+        $post->timestamps = true;
+
         return response()->json([
             "message" => "Post deleted successfully",
             "post" => $post
@@ -296,7 +303,10 @@ class PostController extends Controller
 
         $post = Post::withTrashed()->findOrFail($id);
 
-        $post->restore();
+        $post->timestamps = false;
+        $post->restoreQuietly();
+        $post->timestamps = true;
+
         return response()->json([
             "message" => "Post restored successfully",
             "post" => $post
@@ -343,9 +353,20 @@ class PostController extends Controller
      *    @apiVersion 0.1.0
      */
 
-    public function getPostData(Request $request, $id){
-        $accessToken = PersonalAccessToken::findToken($request->bearerToken())->abilities;
-        if(in_array("view-all", $accessToken) || in_array("*", $accessToken)){
+    public function getPostData(Request $request, $id){ //update docs
+        $accessToken = PersonalAccessToken::findToken($request->bearerToken());
+
+
+        $user = $accessToken->tokenable;
+
+        $likedPosts = $user->likedPosts->toArray();
+        $likedPostsIds = [];
+
+        foreach($likedPosts as $onePost){
+            array_push($likedPostsIds, $onePost["id"]);
+        }
+
+        if(in_array("view-all", $accessToken->abilities) || in_array("*", $accessToken->abilities)){
             $post = Post::withTrashed()->findOrFail($id);
             if($post->image){
                 $image = $post->getImage();
@@ -361,7 +382,7 @@ class PostController extends Controller
                 "likes" => $post->likes,
                 "deleted_at" => $post->deleted_at,
                 "created_at" => $post->created_at,
-                "modified_at" => $post->updated_at
+                "updated_at" => $post->updated_at
             ];
         }
         else{
@@ -373,13 +394,14 @@ class PostController extends Controller
                 "image" => $image,
                 "likes" => $post->likes,
                 "created_at" => $post->created_at,
-                "modified_at" => $post->updated_at
+                "updated_at" => $post->updated_at
             ];
         }
 
 
         return response()->json([
             "post" => $data,
+            "likedPosts" => $likedPostsIds
         ]);
     }
 
@@ -624,7 +646,7 @@ class PostController extends Controller
      *    @apiVersion 0.3.0
      */
 
-    public function searchPosts(Request $request, $sortByStr, $sortDirStr, $search){
+    public function searchPosts(Request $request, $sortByStr, $sortDirStr, $search){ //update docs
         $sortBy = request()->query("sort_by", $sortByStr);
         $sortDir = request()->query("sort_dir", $sortDirStr);
         $accessToken = PersonalAccessToken::findToken($request->bearerToken())->abilities;
