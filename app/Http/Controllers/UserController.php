@@ -353,15 +353,43 @@ class UserController extends Controller
      *     }
      * @apiPermission admin
      * @apiSuccess {String} message Information about the user deletion.
+     * @apiSuccess {Object} user Data of the deleted user
+     * @apiSuccess {Number} user.id   User's <code>id</code>.
+     * @apiSuccess {Number} user.name User's <code>name</code>.
+     * @apiSuccess {Number} user.email User's <code>email</code>.
+     * @apiSuccess {Number} user.deaths User's <code>deaths</code>.
+     * @apiSuccess {Number} user.kills User's <code>kills</code>.
+     * @apiSuccess {Number} user.points User's <code>points</code>.
+     * @apiSuccess {Number} user.boss1lvl User's <code>boss1lvl</code>.
+     * @apiSuccess {Number} user.boss2lvl User's <code>boss2lvl</code>.
+     * @apiSuccess {Number} user.boss3lvl User's <code>boss3lvl</code>.
+     * @apiSuccess {Date} user.created_at When the user was created.
+     * @apiSuccess {Date} user.deleted_at When the user was deleted.
+     * @apiSuccess {Number} user.privilege <code>privilege</code> level of user.
      *    @apiSuccessExample {json} Success-Response:
      *    HTTP/1.1 200 OK
      *     {
      *         "message": "User deleted successfully",
+     *         "user": {
+     *              "id": 3,
+     *              "name": "Test User2",
+     *              "email": "test5@example.com",
+     *              "deaths": 8,
+     *              "kills": 9,
+     *              "points": 8,
+     *              "boss1lvl": 3,
+     *              "boss2lvl": 2,
+     *              "boss3lvl": 5,
+     *              "privilege": 10,
+     *              "deleted_at": "2025-01-07T07:57:23.000000Z",
+     *              "created_at": "2024-11-05T11:49:09.000000Z",
+     *              "updated_at": "2024-12-09T12:48:25.000000Z"
+     *          }
      *     }
-     *    @apiVersion 0.1.0
+     *    @apiVersion 0.3.0
      */
 
-    public function delete($id){ //Update docs
+    public function delete($id){ 
 
         $user = User::findOrFail($id);
         
@@ -390,18 +418,39 @@ class UserController extends Controller
      *     }
      * @apiPermission admin
      * @apiSuccess {String} message Information about the user restoration.
-     * @apiSuccess {Object} user Data of restored user
-     * @apiSuccess {Number} user.id Id of restored user
-     * @apiSuccess {Number} user.privilege <code>privilege</code> of restored user
+     * @apiSuccess {Object} user Data of the deleted user
+     * @apiSuccess {Number} user.id   User's <code>id</code>.
+     * @apiSuccess {Number} user.name User's <code>name</code>.
+     * @apiSuccess {Number} user.email User's <code>email</code>.
+     * @apiSuccess {Number} user.deaths User's <code>deaths</code>.
+     * @apiSuccess {Number} user.kills User's <code>kills</code>.
+     * @apiSuccess {Number} user.points User's <code>points</code>.
+     * @apiSuccess {Number} user.boss1lvl User's <code>boss1lvl</code>.
+     * @apiSuccess {Number} user.boss2lvl User's <code>boss2lvl</code>.
+     * @apiSuccess {Number} user.boss3lvl User's <code>boss3lvl</code>.
+     * @apiSuccess {Date} user.created_at When the user was created.
+     * @apiSuccess {Date} user.deleted_at When the user was deleted.
+     * @apiSuccess {Number} user.privilege <code>privilege</code> level of user.
      *    @apiSuccessExample {json} Success-Response:
      *   {
      *       "message": "User restored successfully",
      *       "user": {
-     *           "id": 6,
-     *           "privilege": 1
+     *           "id": 5,
+     *           "name": "Test User4",
+     *           "email": "test7@example.com",
+     *           "deaths": 5,
+     *           "kills": 6,
+     *           "points": 5,
+     *           "boss1lvl": 9,
+     *           "boss2lvl": 7,
+     *           "boss3lvl": 10,
+     *           "privilege": 10,
+     *           "deleted_at": null,
+     *           "created_at": "2024-11-05T11:49:11.000000Z",
+     *           "updated_at": "2024-11-05T11:49:11.000000Z"
      *       }
      *   }
-     *    @apiVersion 0.1.0
+     *    @apiVersion 0.3.0
      */
 
     public function restore($id){
@@ -416,6 +465,7 @@ class UserController extends Controller
         $user->timestamps = true;
 
         $user->regenerateToken();
+        unset($user->token);
         return response()->json([
             "message" => "User restored successfully",
             "user" => $user
@@ -494,7 +544,7 @@ class UserController extends Controller
      *    @apiVersion 0.2.0
      */
 
-    public function getUserData(Request $request, $id){ //update docs
+    public function getUserData(Request $request, $id){ 
         $accessToken = PersonalAccessToken::findToken($request->bearerToken())->abilities;
         if(in_array("view-all", $accessToken) || in_array("*", $accessToken)){
             $user = User::withTrashed()->findOrFail($id);

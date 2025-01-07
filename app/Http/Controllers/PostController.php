@@ -54,7 +54,6 @@ class PostController extends Controller
         $request->validate([
             "post" => "required|min:10|max:65534",
             "image" => "nullable|is_image:jpeg,jpg,png|base64_image_size:500", 
-            // "user_id" => "required|numeric",
         ]);
 
         $accessTokenUser = PersonalAccessToken::findToken($request->bearerToken())->tokenable;
@@ -176,23 +175,43 @@ class PostController extends Controller
      *      }
      * @apiPermission normal user
      * @apiSuccess {String} message Information about the liking procedure.
+     * @apiSuccess {Object} post Data of the post that was liked
+     * @apiSuccess {Number} post.id <code>id</code> of the post
+     * @apiSuccess {String} post.image Base64 endoded <code>image</code> of the post
+     * @apiSuccess {Number} post.likes Number of <code>likes</code> on the post
+     * @apiSuccess {Number} post.user_id <code>id</code> of the user who made the post
+     * @apiSuccess {Date} post.deleted_at When the post was deleted
+     * @apiSuccess {Date} post.created_at When the post was created
+     * @apiSuccess {Date} post.updated_at When the post was last updated
      * @apiSuccessExample {json} Success-Response:
      *    HTTP/1.1 200 OK
      *      {
      *          "message": "Post liked successfully"
+     *          "post": {
+     *              "id": 1,
+     *              "post": "Alice desperately: 'he's perfectly idiotic!' And.",
+     *              "image": "Who ever..png",
+     *              "likes": 1777,
+     *              "user_id": 5,
+     *              "deleted_at": null,
+     *              "created_at": "2024-11-05T11:49:15.000000Z",
+     *              "updated_at": "2025-01-06T12:53:34.000000Z"
+     *          }
      *      }
      *    @apiVersion 0.3.0
      */
 
-    public function likePost(Request $request, $id){ //Update docs
+    public function likePost(Request $request, $id){
         $request->validate([
             "likes" => "required|boolean"
         ]);
 
-        $accessTokenUser = PersonalAccessToken::findToken($request->bearerToken())->tokenable;
+        $accessToken = PersonalAccessToken::findToken($request->bearerToken());
         $post = Post::findOrFail($id);
 
-        $likedPosts = $accessTokenUser->likedPosts->toArray();
+        $image = $post->getImage();
+
+        $likedPosts = $accessToken->tokenable->likedPosts->toArray();
         $likedPostsIds = [];
 
         foreach($likedPosts as $onePost){
@@ -203,13 +222,13 @@ class PostController extends Controller
 
         if($request->likes && !in_array($post->id, $likedPostsIds)){
             $post->likes += 1;
-            $accessTokenUser->likedPosts()->attach($post->id);
+            $accessToken->tokenable->likedPosts()->attach($post->id);
             
             $responseMessage = "Post liked successfully";
         }
         else if($request->likes == false && in_array($post->id, $likedPostsIds)){
             $post->likes -= 1;
-            $accessTokenUser->likedPosts()->detach($post->id);
+            $accessToken->tokenable->likedPosts()->detach($post->id);
 
             $responseMessage = "Unliked successfully";
         }
@@ -221,9 +240,40 @@ class PostController extends Controller
         $post->saveQuietly();
         $post->timestamps = true;
 
+        if(in_array("view-all", $accessToken->abilities) || in_array("*", $accessToken->abilities)){
+            if($post->image){
+                $image = $post->getImage();
+            }
+            else{
+                $image = "";
+            }
+            
+            $data = [
+                "id" => $post->id,
+                "post" => $post->post,
+                "image" => $image,
+                "likes" => $post->likes,
+                "deleted_at" => $post->deleted_at,
+                "created_at" => $post->created_at,
+                "updated_at" => $post->updated_at
+            ];
+        }
+        else{
+            $post = Post::findOrFail($id);
+            $image = $post->getImage();
+            $data = [
+                "id" => $post->id,
+                "post" => $post->post,
+                "image" => $image,
+                "likes" => $post->likes,
+                "created_at" => $post->created_at,
+                "updated_at" => $post->updated_at
+            ];
+        }
+
         return response()->json([
             "message" => $responseMessage,
-            "post" => $post
+            "post" => $data
         ]);
     }
 
@@ -243,19 +293,37 @@ class PostController extends Controller
      *       }
      * @apiPermission normal user
      * @apiSuccess {String} message Information about the post deletion.
+     * @apiSuccess {Object} post Data of the post that was liked
+     * @apiSuccess {Number} post.id <code>id</code> of the post
+     * @apiSuccess {String} post.image Base64 endoded <code>image</code> of the post
+     * @apiSuccess {Number} post.likes Number of <code>likes</code> on the post
+     * @apiSuccess {Number} post.user_id <code>id</code> of the user who made the post
+     * @apiSuccess {Date} post.deleted_at When the post was deleted
+     * @apiSuccess {Date} post.created_at When the post was created
+     * @apiSuccess {Date} post.updated_at When the post was last updated
      * @apiSuccessExample {json} Success-Response:
      *    HTTP/1.1 200 OK
      *       {
      *           "message": "Post deleted successfully",
+     *          "post": {
+     *              "id": 4,
+     *              "post": "And she began fancying the sort of thing that.",
+     *              "image": "She soon..png",
+     *              "likes": 2175,
+     *              "user_id": 9,
+     *              "deleted_at": "2025-01-07T09:03:50.000000Z",
+     *              "created_at": "2024-11-05T11:49:15.000000Z",
+     *              "updated_at": "2024-11-05T11:49:15.000000Z"
+     *          }
      *       }
-     *    @apiVersion 0.1.0
+     *    @apiVersion 0.3.0
      */
 
-    public function delete(Request $request, $id)//Update docs
+    public function delete(Request $request, $id)
     {
-        $accessTokenUser = PersonalAccessToken::findToken($request->bearerToken())->tokenable;
+        $accessToken = PersonalAccessToken::findToken($request->bearerToken());
         $post = Post::findOrFail($id);
-        if($accessTokenUser->id != $post->user_id && $accessTokenUser->privilege != 10){ 
+        if($accessToken->tokenable->id != $post->user_id && $accessToken->tokenable->privilege != 10){ 
             return response()->json([
                 "message" => "Action not allowed"
             ], 401);
@@ -264,9 +332,40 @@ class PostController extends Controller
         $post->deleteQuietly();
         $post->timestamps = true;
 
+        if(in_array("view-all", $accessToken->abilities) || in_array("*", $accessToken->abilities)){
+            if($post->image){
+                $image = $post->getImage();
+            }
+            else{
+                $image = "";
+            }
+            
+            $data = [
+                "id" => $post->id,
+                "post" => $post->post,
+                "image" => $image,
+                "likes" => $post->likes,
+                "deleted_at" => $post->deleted_at,
+                "created_at" => $post->created_at,
+                "updated_at" => $post->updated_at
+            ];
+        }
+        else{
+            $post = Post::findOrFail($id);
+            $image = $post->getImage();
+            $data = [
+                "id" => $post->id,
+                "post" => $post->post,
+                "image" => $image,
+                "likes" => $post->likes,
+                "created_at" => $post->created_at,
+                "updated_at" => $post->updated_at
+            ];
+        }
+
         return response()->json([
             "message" => "Post deleted successfully",
-            "post" => $post
+            "post" => $data
         ]);
     }
 
@@ -286,20 +385,33 @@ class PostController extends Controller
      *       }
      * @apiPermission admin
      * @apiSuccess {String} message Information about the post restoration.
-     * @apiSuccess {Object} post Data of the restored post.
-     * @apiSuccess {Number} post.id <code>id</code> of the restored post.
+     * @apiSuccess {Object} post Data of the post that was liked
+     * @apiSuccess {Number} post.id <code>id</code> of the post
+     * @apiSuccess {String} post.image Base64 endoded <code>image</code> of the post
+     * @apiSuccess {Number} post.likes Number of <code>likes</code> on the post
+     * @apiSuccess {Number} post.user_id <code>id</code> of the user who made the post
+     * @apiSuccess {Date} post.deleted_at When the post was deleted
+     * @apiSuccess {Date} post.created_at When the post was created
+     * @apiSuccess {Date} post.updated_at When the post was last updated
      * @apiSuccessExample {json} Success-Response:
      *    HTTP/1.1 200 OK
      *       {
      *           "message": "Post restored successfully",
      *           "post": {
-     *               "id": 3
+     *               "id": 5,
+     *               "post": "Alice: 'allow me to him: She gave me a good.",
+     *               "image": "Dormouse..png",
+     *               "likes": 295,
+     *               "user_id": 7,
+     *               "deleted_at": null,
+     *               "created_at": "2024-11-05T11:49:15.000000Z",
+     *               "updated_at": "2024-12-16T11:33:07.000000Z"
      *           }
      *       }
-     *    @apiVersion 0.1.0
+     *    @apiVersion 0.3.0
      */
 
-    public function restore($id){ //Update docs
+    public function restore($id){ 
 
         $post = Post::withTrashed()->findOrFail($id);
 
@@ -307,9 +419,26 @@ class PostController extends Controller
         $post->restoreQuietly();
         $post->timestamps = true;
 
+            if($post->image){
+                $image = $post->getImage();
+            }
+            else{
+                $image = "";
+            }
+            
+        $data = [
+            "id" => $post->id,
+            "post" => $post->post,
+            "image" => $image,
+            "likes" => $post->likes,
+            "deleted_at" => $post->deleted_at,
+            "created_at" => $post->created_at,
+            "updated_at" => $post->updated_at
+        ];
+
         return response()->json([
             "message" => "Post restored successfully",
-            "post" => $post
+            "post" => $data
         ]);
         
     }
@@ -335,6 +464,7 @@ class PostController extends Controller
      * @apiSuccess (Success-Normal user) {Number} post.likes Post's number of <code>likes</code>.
      * @apiSuccess (Success-Normal user) {Date} post.created_at When the <code>post</code> was created.
      * @apiSuccess (Success-Normal user) {Date} post.modified_at When the <code>post</code> was last modified.
+     * @apiSuccess (Success-Normal user) {Array} likedPosts Ids of the posts that the user has liked
      * 
      * @apiSuccess (Success-Admin user (fields returned in addition to the normal user fields)) {Object} post Data of the requested post
      * @apiSuccess (Success-Admin user (fields returned in addition to the normal user fields)) {Date} post.deleted_at When the post was deleted
@@ -349,11 +479,16 @@ class PostController extends Controller
      *               "created_at": "2024-11-26T17:12:34.000000Z",
      *               "modified_at": "2024-11-26T17:12:34.000000Z"
      *           }
+     *           "likedPosts": [
+     *                  6,
+     *                  1,
+     *                  12
+     *              ]
      *       }
-     *    @apiVersion 0.1.0
+     *    @apiVersion 0.3.0
      */
 
-    public function getPostData(Request $request, $id){ //update docs
+    public function getPostData(Request $request, $id){ 
         $accessToken = PersonalAccessToken::findToken($request->bearerToken());
 
 
@@ -646,7 +781,7 @@ class PostController extends Controller
      *    @apiVersion 0.3.0
      */
 
-    public function searchPosts(Request $request, $sortByStr, $sortDirStr, $search){ //update docs
+    public function searchPosts(Request $request, $sortByStr, $sortDirStr, $search){
         $sortBy = request()->query("sort_by", $sortByStr);
         $sortDir = request()->query("sort_dir", $sortDirStr);
         $accessToken = PersonalAccessToken::findToken($request->bearerToken())->abilities;

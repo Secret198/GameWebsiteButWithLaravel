@@ -919,3 +919,125 @@
      *     }
      *    @apiVersion 0.1.0
      */
+
+         /**
+     * @api {delete} /user/restore/:id Restore user
+     * @apiParam {Number} id Id of user to be restored
+     * @apiGroup User
+     * @apiUse HeadersWithToken
+     * @apiError Unauthenticated User making the request is not logged in or has outdated access token.
+     * @apiError InvalidAbilityProvided The user is not authorized to restore deleted users.
+     * @apiError NoQueryResultsForModel:id User with <code>id</code> could not be found
+     * @apiErrorExample {json} Error-Response:
+     *     HTTP/1.1 401 Unathorized
+     *     {
+     *       "message": "Unauthenticated."
+     *     }
+     * @apiPermission admin
+     * @apiSuccess {String} message Information about the user restoration.
+     * @apiSuccess {Object} user Data of restored user
+     * @apiSuccess {Number} user.id Id of restored user
+     * @apiSuccess {Number} user.privilege <code>privilege</code> of restored user
+     *    @apiSuccessExample {json} Success-Response:
+     *   {
+     *       "message": "User restored successfully",
+     *       "user": {
+     *           "id": 6,
+     *           "privilege": 1
+     *       }
+     *   }
+     *    @apiVersion 0.1.0
+     */
+
+
+ /**
+  * @api {delete} /post/:id Delete post
+  * @apiDescription Deleting posts, normal users can delete their own posts, while admis can delete everyone's.
+  * @apiParam {Number} id Id of the post to be deleted
+  * @apiGroup Post
+  * @apiUse HeadersWithToken
+  * @apiError Unauthenticated User making the request is not logged in or has outdated access token.
+  * @apiError NoQueryEesultsForModel:id Post with <code>id</code> could not be found.
+  * @apiError ActionNotAllowed Normal users are not allowed to delete others user's posts
+  * @apiErrorExample {json} Error-Response:
+  *     HTTP/1.1 401 Unauthorized
+  *       {
+  *           "message": "Action not allowed",
+  *       }
+  * @apiPermission normal user
+  * @apiSuccess {String} message Information about the post deletion.
+  * @apiSuccessExample {json} Success-Response:
+  *    HTTP/1.1 200 OK
+  *       {
+  *           "message": "Post deleted successfully",
+  *       }
+  *    @apiVersion 0.1.0
+  */
+
+     /**
+     * @api {delete} /post/restore/:id Restore post
+     * @apiParam {Number} id Id of the post to be restored
+     * @apiGroup Post
+     * @apiUse HeadersWithToken
+     * @apiError Unauthenticated User making the request is not logged in or has outdated access token.
+     * @apiError NoQueryEesultsForModel:id Post with <code>id</code> could not be found.
+     * @apiError ActionNotAllowed Normal users are not allowed to restore posts
+     * @apiError InvalidAbilityProvided The user is not authorized to restore posts
+     * @apiErrorExample {json} Error-Response:
+     *     HTTP/1.1 401 Unauthorized
+     *       {
+     *           "message": "Action not allowed",
+     *       }
+     * @apiPermission admin
+     * @apiSuccess {String} message Information about the post restoration.
+     * @apiSuccess {Object} post Data of the restored post.
+     * @apiSuccess {Number} post.id <code>id</code> of the restored post.
+     * @apiSuccessExample {json} Success-Response:
+     *    HTTP/1.1 200 OK
+     *       {
+     *           "message": "Post restored successfully",
+     *           "post": {
+     *               "id": 3
+     *           }
+     *       }
+     *    @apiVersion 0.1.0
+     */
+
+         /**
+     * @api {get} /post/:id Get post data
+     * @apiDescription Getting post data, admin users get additional fields returned in the response, compared to normal users
+     * @apiParam {Number} id Id of post to be queried
+     * @apiGroup Post
+     * @apiUse HeadersWithToken
+     * @apiError Unauthenticated. User making the request is not logged in or has outdated access token.
+     * @apiError NoQueryResultsForModel:id Post with <code>id</code> could not be found
+     * @apiErrorExample {json} Error-Response:
+     *     HTTP/1.1 401 Unathorized
+     *       {
+     *           "message": "Unauthenticated,"
+     *       }
+     * @apiPermission normal user
+     * @apiSuccess (Success-Normal user) {Object} post Data of the requested post.
+     * @apiSuccess (Success-Normal user) {Number} post.id   Post's <code>id</code>.
+     * @apiSuccess (Success-Normal user) {String} post.post Post's <code>text</code>.
+     * @apiSuccess (Success-Normal user) {String} post.image Post's <code>image</code> encoded with base64 encoding.
+     * @apiSuccess (Success-Normal user) {Number} post.likes Post's number of <code>likes</code>.
+     * @apiSuccess (Success-Normal user) {Date} post.created_at When the <code>post</code> was created.
+     * @apiSuccess (Success-Normal user) {Date} post.modified_at When the <code>post</code> was last modified.
+     * 
+     * @apiSuccess (Success-Admin user (fields returned in addition to the normal user fields)) {Object} post Data of the requested post
+     * @apiSuccess (Success-Admin user (fields returned in addition to the normal user fields)) {Date} post.deleted_at When the post was deleted
+     * @apiSuccessExample {json} Success-Response:
+     *    HTTP/1.1 200 OK
+     *       {
+     *           "post": {
+     *               "id": 11,
+     *               "post": "Yeah body, light weight",
+     *               "image": "data:image/jpg;base64;<base64-encoded-image>",
+     *               "likes": 0,
+     *               "created_at": "2024-11-26T17:12:34.000000Z",
+     *               "modified_at": "2024-11-26T17:12:34.000000Z"
+     *           }
+     *       }
+     *    @apiVersion 0.1.0
+     */
