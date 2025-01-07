@@ -26,9 +26,9 @@ class DatabaseSeeder extends Seeder
                 'deaths' => fake()->numberBetween(1, 10),
                 'kills' => fake()->numberBetween(1, 10),
                 'waves' => fake()->numberBetween(1, 10),
-                'boss1lvl' => fake()->numberBetween(1, 10),
-                'boss2lvl' => fake()->numberBetween(1, 10),
-                'boss3lvl' => fake()->numberBetween(1, 10),
+                'boss1lvl' => fake()->numberBetween(0, 1),
+                'boss2lvl' => fake()->numberBetween(0, 1),
+                'boss3lvl' => fake()->numberBetween(0, 1),
                 'privilege' => fake()->randomElement([1, 10]),
             ]);
             $userBar->advance();

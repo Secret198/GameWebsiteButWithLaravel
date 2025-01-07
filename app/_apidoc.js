@@ -1041,3 +1041,68 @@
      *       }
      *    @apiVersion 0.1.0
      */
+
+          /**
+     * @api {put} /user/update/:id User update
+     * @apiParam {Number} id Id of user to be updated
+     * @apiGroup User
+     * @apiDescription Updating the user data, normal users are only allowed to update their own data, while admin users can update everyone's
+     * @apiUse HeadersWithToken
+     * @apiBody {String{min:3}} [name] New name of user
+     * @apiBody {Email} [email] New email of user
+     * @apiBody {Number} [deaths] New number of <code>deaths</code> of the user
+     * @apiBody {Number} [kills] New number of <code>kills</code> of the user
+     * @apiBody {Number} [waves] New number of <code>waves</code> of user
+     * @apiBody {Number} [boss1lvl] New <code>boss1lvl</code> of user
+     * @apiBody {Number} [boss2lvl] New <code>boss2lvl</code> of user
+     * @apiBody {Number} [boss3lvl] New <code>boss3lvl</code> of user
+     * @apiError Unauthenticated User making the request is not logged in or has outdated access token.
+     * @apiError TheNameFieldMustBeAtLeast3Characters. <code>name</code> field must be at least 3 characters.
+     * @apiError TheEmailFieldMustBeAValidEmailAddress. <code>email</code> field must be a valid email address.
+     * @apiError TheDeathsFieldMustBeANumber <code>deaths</code> field must be a number.
+     * @apiError TheKillsFieldMustBeANumber <code>kills</code> field must be a number.
+     * @apiError ThewavesFieldMustBeANumber <code>waves</code> field must be a number.
+     * @apiError TheBoss1lvlFieldMustBeANumber <code>boss1lvl</code> field must be a number.
+     * @apiError TheBoss2lvlFieldMustBeANumber <code>boss2lvl</code> field must be a number.
+     * @apiError TheBoss3lvlFieldMustBeANumber <code>boss3lvl</code> field must be a number.
+     * @apiError NoQueryResultsForModel:id User with <code>id</code> could not be found
+     * @apiErrorExample {json} Error-Response:
+     *     HTTP/1.1 422 Unprocessable Content
+     *       {
+     *           "message": "The name field must be at least 3 characters.",
+     *           "errors": {
+     *               "name": [
+     *                   "The name field must be at least 3 characters."
+     *               ]
+     *           }
+     *       }
+     * @apiPermission normal user
+     * @apiSuccess {String} message Information about the update.
+     * @apiSuccess {Object} user Data of the updated user.
+     * @apiSuccess {Number} user.id   User's <code>id</code>.
+     * @apiSuccess {Number} user.name User's <code>name</code>.
+     * @apiSuccess {Number} user.email User's <code>email</code>.
+     * @apiSuccess {Number} user.deaths User's <code>deaths</code>.
+     * @apiSuccess {Number} user.kills User's <code>kills</code>.
+     * @apiSuccess {Number} user.waves User's <code>waves</code>.
+     * @apiSuccess {Number} user.boss1lvl User's <code>boss1lvl</code>.
+     * @apiSuccess {Number} user.boss2lvl User's <code>boss2lvl</code>.
+     * @apiSuccess {Number} user.boss3lvl User's <code>boss3lv</code>l.
+     * @apiSuccessExample {json} Success-Response:
+     *    HTTP/1.1 200 OK
+     *       {
+     *       "message": "User updated successfully",
+     *          "user": {
+     *              "id": 1,
+     *              "name": "New name",
+     *              "email": "test3@newemail.com",
+     *              "deaths": 619,
+     *              "kills": 4,
+     *              "waves": 5,
+     *              "boss1lvl": 4,
+     *              "boss2lvl": 1,
+     *              "boss3lvl": 7
+     *          }
+     *       }
+     *    @apiVersion 0.1.0
+     */

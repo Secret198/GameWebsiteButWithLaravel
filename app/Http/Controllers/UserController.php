@@ -91,6 +91,10 @@ class UserController extends Controller
                 "id" =>$user->id,
                 "name" => $user->name,
                 "deaths" => $user->deaths,
+                "waves" => $user->waves,
+                "boss1lvl" => $user->boss1lvl,
+                "boss2lvl" => $user->boss2lvl,
+                "boss3lvl" => $user->boss3lvl,
                 "token" => $user->token,
                 "privilege" => $user->privilege
             ],
@@ -244,9 +248,9 @@ class UserController extends Controller
      * @apiBody {Number} [deaths] New number of <code>deaths</code> of the user
      * @apiBody {Number} [kills] New number of <code>kills</code> of the user
      * @apiBody {Number} [waves] New number of <code>waves</code> of user
-     * @apiBody {Number} [boss1lvl] New <code>boss1lvl</code> of user
-     * @apiBody {Number} [boss2lvl] New <code>boss2lvl</code> of user
-     * @apiBody {Number} [boss3lvl] New <code>boss3lvl</code> of user
+     * @apiBody {Number=0, 1} [boss1lvl] New <code>boss1lvl</code> of user
+     * @apiBody {Number=0, 1} [boss2lvl] New <code>boss2lvl</code> of user
+     * @apiBody {Number=0, 1} [boss3lvl] New <code>boss3lvl</code> of user
      * @apiError Unauthenticated User making the request is not logged in or has outdated access token.
      * @apiError TheNameFieldMustBeAtLeast3Characters. <code>name</code> field must be at least 3 characters.
      * @apiError TheEmailFieldMustBeAValidEmailAddress. <code>email</code> field must be a valid email address.
@@ -290,12 +294,12 @@ class UserController extends Controller
      *              "deaths": 619,
      *              "kills": 4,
      *              "waves": 5,
-     *              "boss1lvl": 4,
+     *              "boss1lvl": 0,
      *              "boss2lvl": 1,
-     *              "boss3lvl": 7
+     *              "boss3lvl": 0
      *          }
      *       }
-     *    @apiVersion 0.1.0
+     *    @apiVersion 0.3.0
      */
 
     public function update(Request $request, $id){
@@ -305,13 +309,13 @@ class UserController extends Controller
             "deaths" => "nullable|numeric",
             "kills" => "nullable|numeric",
             "waves" => "nullable|numeric",
-            "boss1lvl" => "nullable|numeric",
-            "boss2lvl" => "nullable|numeric",
-            "boss3lvl" => "nullable|numeric",
+            "boss1lvl" => "nullable|boolean",
+            "boss2lvl" => "nullable|boolean",
+            "boss3lvl" => "nullable|boolean",
         ]);
 
         $accessTokenUser = PersonalAccessToken::findToken($request->bearerToken())->tokenable;
-        $user = User::findOrFail($id);
+        $user = User::withTrashed()->findOrFail($id);
         if($accessTokenUser->id != $user->id && $accessTokenUser->privilege != 10){ 
             return response()->json([
                 "message" => "Action not allowed"
@@ -441,9 +445,9 @@ class UserController extends Controller
      *           "deaths": 5,
      *           "kills": 6,
      *           "waves": 5,
-     *           "boss1lvl": 9,
-     *           "boss2lvl": 7,
-     *           "boss3lvl": 10,
+     *           "boss1lvl": 0,
+     *           "boss2lvl": 0,
+     *           "boss3lvl": 0,
      *           "privilege": 10,
      *           "deleted_at": null,
      *           "created_at": "2024-11-05T11:49:11.000000Z",
@@ -521,9 +525,9 @@ class UserController extends Controller
      *               "deaths": 5,
      *               "kills": 6,
      *               "waves": 5,
-     *               "boss1lvl": 9,
-     *               "boss2lvl": 7,
-     *               "boss3lvl": 10,
+     *               "boss1lvl": 0,
+     *               "boss2lvl": 0,
+     *               "boss3lvl": 0,
      *               "created_at": "2024-11-05T11:49:11.000000Z",
      *               "privilege": 1
      *           },

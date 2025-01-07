@@ -65,6 +65,12 @@ class AchievementController extends Controller
             "description" => "required"
         ]);
 
+        if(($request->field == "boss1lvl" || $request->field == "boss2lvl" || $request->field == "boss3lvl") && $request->threshold > 1 ){
+            return response()->json([
+                "message" => "Threshold must be 0 or 1"
+            ], 400);
+        }
+
         $achievement = new Achievement();
         $achievement->name = $request->name;
         $achievement->field = $request->field;
@@ -127,7 +133,13 @@ class AchievementController extends Controller
             "description" => "nullable"
         ]);
 
-        $achievement = Achievement::findOrFail($id);
+        if(($request->field == "boss1lvl" || $request->field == "boss2lvl" || $request->field == "boss3lvl") && $request->threshold > 1 ){
+            return response()->json([
+                "message" => "Threshold must be 0 or 1"
+            ], 400);
+        }
+
+        $achievement = Achievement::withTrashed()->findOrFail($id);
         $achievement->update($request->all());
 
         return response()->json([
@@ -172,7 +184,7 @@ class AchievementController extends Controller
      */
 
     public function show(string $id){
-        $achievement = Achievement::findOrFail($id);
+        $achievement = Achievement::withTrashed()->findOrFail($id);
 
         return response()->json([
             "achievement" => $achievement

@@ -19,9 +19,9 @@ return new class extends Migration
             $table->mediumInteger("deaths");
             $table->mediumInteger("kills");
             $table->bigInteger("waves");
-            $table->mediumInteger("boss1lvl");
-            $table->mediumInteger("boss2lvl");
-            $table->mediumInteger("boss3lvl");
+            $table->boolean("boss1lvl");
+            $table->boolean("boss2lvl");
+            $table->boolean("boss3lvl");
             $table->integer("privilege");
             $table->softDeletes();
             $table->rememberToken();

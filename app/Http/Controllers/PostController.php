@@ -135,7 +135,7 @@ class PostController extends Controller
         ]);
 
         $accessTokenUser = PersonalAccessToken::findToken($request->bearerToken())->tokenable;
-        $post = Post::findOrFail($id);
+        $post = Post::withTrashed()->findOrFail($id);
         if($accessTokenUser->id != $post->user_id && $accessTokenUser->privilege != 10){
             return response()->json([
                 "message" => "Action not allowed"
@@ -209,7 +209,6 @@ class PostController extends Controller
         $accessToken = PersonalAccessToken::findToken($request->bearerToken());
         $post = Post::findOrFail($id);
 
-        $image = $post->getImage();
 
         $likedPosts = $accessToken->tokenable->likedPosts->toArray();
         $likedPostsIds = [];
@@ -260,7 +259,12 @@ class PostController extends Controller
         }
         else{
             $post = Post::findOrFail($id);
-            $image = $post->getImage();
+            if($post->image){
+                $image = $post->getImage();
+            }
+            else{
+                $image = "";
+            }
             $data = [
                 "id" => $post->id,
                 "post" => $post->post,
@@ -332,36 +336,44 @@ class PostController extends Controller
         $post->deleteQuietly();
         $post->timestamps = true;
 
-        if(in_array("view-all", $accessToken->abilities) || in_array("*", $accessToken->abilities)){
-            if($post->image){
-                $image = $post->getImage();
-            }
-            else{
-                $image = "";
-            }
-            
-            $data = [
-                "id" => $post->id,
-                "post" => $post->post,
-                "image" => $image,
-                "likes" => $post->likes,
-                "deleted_at" => $post->deleted_at,
-                "created_at" => $post->created_at,
-                "updated_at" => $post->updated_at
-            ];
+        if($post->image){
+            $image = $post->getImage();
         }
         else{
-            $post = Post::findOrFail($id);
-            $image = $post->getImage();
-            $data = [
-                "id" => $post->id,
-                "post" => $post->post,
-                "image" => $image,
-                "likes" => $post->likes,
-                "created_at" => $post->created_at,
-                "updated_at" => $post->updated_at
-            ];
+            $image = "";
         }
+        
+        $data = [
+            "id" => $post->id,
+            "post" => $post->post,
+            "image" => $image,
+            "likes" => $post->likes,
+            "deleted_at" => $post->deleted_at,
+            "created_at" => $post->created_at,
+            "updated_at" => $post->updated_at
+        ];
+
+        // if(in_array("view-all", $accessToken->abilities) || in_array("*", $accessToken->abilities)){
+        //     if($post->image){
+        //         $image = $post->getImage();
+        //     }
+        //     else{
+        //         $image = "";
+        //     }
+            
+        //     $data = [
+        //         "id" => $post->id,
+        //         "post" => $post->post,
+        //         "image" => $image,
+        //         "likes" => $post->likes,
+        //         "deleted_at" => $post->deleted_at,
+        //         "created_at" => $post->created_at,
+        //         "updated_at" => $post->updated_at
+        //     ];
+        // }
+        // else{
+        //     $data = "";
+        // }
 
         return response()->json([
             "message" => "Post deleted successfully",
@@ -522,7 +534,12 @@ class PostController extends Controller
         }
         else{
             $post = Post::findOrFail($id);
-            $image = $post->getImage();
+            if($post->image){
+                $image = $post->getImage();
+            }
+            else{
+                $image = "";
+            }
             $data = [
                 "id" => $post->id,
                 "post" => $post->post,
