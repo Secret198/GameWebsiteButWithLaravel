@@ -25,7 +25,7 @@ class User extends Authenticatable
         'password',
         'deaths',
         'kills',
-        'points',
+        'waves',
         'boss1lvl',
         'boss2lvl',
         'boss3lvl',
@@ -74,7 +74,7 @@ class User extends Authenticatable
                 }
 
             case "poinst":
-                if($this->points >= $threshold){
+                if($this->waves >= $threshold){
                     return true;
                 }
                 else{

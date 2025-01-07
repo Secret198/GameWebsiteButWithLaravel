@@ -166,7 +166,7 @@ class UserController extends Controller
         $user->password = Hash::make($password);
         $user->deaths = 0;
         $user->kills = 0;
-        $user->points = 0;
+        $user->waves = 0;
         $user->boss1lvl = 0;
         $user->boss2lvl = 0;
         $user->boss3lvl = 0;
@@ -243,7 +243,7 @@ class UserController extends Controller
      * @apiBody {Email} [email] New email of user
      * @apiBody {Number} [deaths] New number of <code>deaths</code> of the user
      * @apiBody {Number} [kills] New number of <code>kills</code> of the user
-     * @apiBody {Number} [points] New number of <code>points</code> of user
+     * @apiBody {Number} [waves] New number of <code>waves</code> of user
      * @apiBody {Number} [boss1lvl] New <code>boss1lvl</code> of user
      * @apiBody {Number} [boss2lvl] New <code>boss2lvl</code> of user
      * @apiBody {Number} [boss3lvl] New <code>boss3lvl</code> of user
@@ -252,7 +252,7 @@ class UserController extends Controller
      * @apiError TheEmailFieldMustBeAValidEmailAddress. <code>email</code> field must be a valid email address.
      * @apiError TheDeathsFieldMustBeANumber <code>deaths</code> field must be a number.
      * @apiError TheKillsFieldMustBeANumber <code>kills</code> field must be a number.
-     * @apiError ThePointsFieldMustBeANumber <code>points</code> field must be a number.
+     * @apiError ThewavesFieldMustBeANumber <code>waves</code> field must be a number.
      * @apiError TheBoss1lvlFieldMustBeANumber <code>boss1lvl</code> field must be a number.
      * @apiError TheBoss2lvlFieldMustBeANumber <code>boss2lvl</code> field must be a number.
      * @apiError TheBoss3lvlFieldMustBeANumber <code>boss3lvl</code> field must be a number.
@@ -275,7 +275,7 @@ class UserController extends Controller
      * @apiSuccess {Number} user.email User's <code>email</code>.
      * @apiSuccess {Number} user.deaths User's <code>deaths</code>.
      * @apiSuccess {Number} user.kills User's <code>kills</code>.
-     * @apiSuccess {Number} user.points User's <code>points</code>.
+     * @apiSuccess {Number} user.waves User's <code>waves</code>.
      * @apiSuccess {Number} user.boss1lvl User's <code>boss1lvl</code>.
      * @apiSuccess {Number} user.boss2lvl User's <code>boss2lvl</code>.
      * @apiSuccess {Number} user.boss3lvl User's <code>boss3lv</code>l.
@@ -289,7 +289,7 @@ class UserController extends Controller
      *              "email": "test3@newemail.com",
      *              "deaths": 619,
      *              "kills": 4,
-     *              "points": 5,
+     *              "waves": 5,
      *              "boss1lvl": 4,
      *              "boss2lvl": 1,
      *              "boss3lvl": 7
@@ -304,7 +304,7 @@ class UserController extends Controller
             "email" => "nullable|email",
             "deaths" => "nullable|numeric",
             "kills" => "nullable|numeric",
-            "points" => "nullable|numeric",
+            "waves" => "nullable|numeric",
             "boss1lvl" => "nullable|numeric",
             "boss2lvl" => "nullable|numeric",
             "boss3lvl" => "nullable|numeric",
@@ -329,7 +329,7 @@ class UserController extends Controller
                 "email" => $user->email,
                 "deaths" => $user->deaths,
                 "kills" => $user->kills,
-                "points" => $user->points,
+                "waves" => $user->waves,
                 "boss1lvl" => $user->boss1lvl,
                 "boss2lvl" => $user->boss2lvl,
                 "boss3lvl" => $user->boss3lvl,
@@ -359,7 +359,7 @@ class UserController extends Controller
      * @apiSuccess {Number} user.email User's <code>email</code>.
      * @apiSuccess {Number} user.deaths User's <code>deaths</code>.
      * @apiSuccess {Number} user.kills User's <code>kills</code>.
-     * @apiSuccess {Number} user.points User's <code>points</code>.
+     * @apiSuccess {Number} user.waves User's <code>waves</code>.
      * @apiSuccess {Number} user.boss1lvl User's <code>boss1lvl</code>.
      * @apiSuccess {Number} user.boss2lvl User's <code>boss2lvl</code>.
      * @apiSuccess {Number} user.boss3lvl User's <code>boss3lvl</code>.
@@ -376,7 +376,7 @@ class UserController extends Controller
      *              "email": "test5@example.com",
      *              "deaths": 8,
      *              "kills": 9,
-     *              "points": 8,
+     *              "waves": 8,
      *              "boss1lvl": 3,
      *              "boss2lvl": 2,
      *              "boss3lvl": 5,
@@ -424,7 +424,7 @@ class UserController extends Controller
      * @apiSuccess {Number} user.email User's <code>email</code>.
      * @apiSuccess {Number} user.deaths User's <code>deaths</code>.
      * @apiSuccess {Number} user.kills User's <code>kills</code>.
-     * @apiSuccess {Number} user.points User's <code>points</code>.
+     * @apiSuccess {Number} user.waves User's <code>waves</code>.
      * @apiSuccess {Number} user.boss1lvl User's <code>boss1lvl</code>.
      * @apiSuccess {Number} user.boss2lvl User's <code>boss2lvl</code>.
      * @apiSuccess {Number} user.boss3lvl User's <code>boss3lvl</code>.
@@ -440,7 +440,7 @@ class UserController extends Controller
      *           "email": "test7@example.com",
      *           "deaths": 5,
      *           "kills": 6,
-     *           "points": 5,
+     *           "waves": 5,
      *           "boss1lvl": 9,
      *           "boss2lvl": 7,
      *           "boss3lvl": 10,
@@ -492,7 +492,7 @@ class UserController extends Controller
      * @apiSuccess (Success-Normal user) {Number} user.email User's <code>email</code>.
      * @apiSuccess (Success-Normal user) {Number} user.deaths User's <code>deaths</code>.
      * @apiSuccess (Success-Normal user) {Number} user.kills User's <code>kills</code>.
-     * @apiSuccess (Success-Normal user) {Number} user.points User's <code>points</code>.
+     * @apiSuccess (Success-Normal user) {Number} user.waves User's <code>waves</code>.
      * @apiSuccess (Success-Normal user) {Number} user.boss1lvl User's <code>boss1lvl</code>.
      * @apiSuccess (Success-Normal user) {Number} user.boss2lvl User's <code>boss2lvl</code>.
      * @apiSuccess (Success-Normal user) {Number} user.boss3lvl User's <code>boss3lvl</code>.
@@ -520,7 +520,7 @@ class UserController extends Controller
      *               "email": "test7@example.com",
      *               "deaths": 5,
      *               "kills": 6,
-     *               "points": 5,
+     *               "waves": 5,
      *               "boss1lvl": 9,
      *               "boss2lvl": 7,
      *               "boss3lvl": 10,
@@ -554,7 +554,7 @@ class UserController extends Controller
                 "email" => $user->email,
                 "deaths" => $user->deaths,
                 "kills" => $user->kills,
-                "points" => $user->points,
+                "waves" => $user->waves,
                 "boss1lvl" => $user->boss1lvl,
                 "boss2lvl" => $user->boss2lvl,
                 "boss3lvl" => $user->boss3lvl,
@@ -572,7 +572,7 @@ class UserController extends Controller
                 "email" => $user->email,
                 "deaths" => $user->deaths,
                 "kills" => $user->kills,
-                "points" => $user->points,
+                "waves" => $user->waves,
                 "boss1lvl" => $user->boss1lvl,
                 "boss2lvl" => $user->boss2lvl,
                 "boss3lvl" => $user->boss3lvl,

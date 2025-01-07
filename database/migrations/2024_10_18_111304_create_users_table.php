@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('password');
             $table->mediumInteger("deaths");
             $table->mediumInteger("kills");
-            $table->bigInteger("points");
+            $table->bigInteger("waves");
             $table->mediumInteger("boss1lvl");
             $table->mediumInteger("boss2lvl");
             $table->mediumInteger("boss3lvl");

@@ -19,7 +19,7 @@ class AchievementSeeder extends Seeder
         for($i = 0; $i < $seedNum; $i++){
             $achievement = new Achievement([
                 'name' => fake()->realText(10),
-                'field' => fake()->randomElement(["deaths", "kills", "points", "boss1lvl", "boss2lvl", "boss3lvl"]),
+                'field' => fake()->randomElement(["deaths", "kills", "waves", "boss1lvl", "boss2lvl", "boss3lvl"]),
                 'threshold' => fake()->randomDigit(),
                 'description' => fake()->realText(10),
             ]);

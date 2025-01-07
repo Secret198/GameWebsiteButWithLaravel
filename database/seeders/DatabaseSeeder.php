@@ -25,7 +25,7 @@ class DatabaseSeeder extends Seeder
                 'password' => 'password'.$i,
                 'deaths' => fake()->numberBetween(1, 10),
                 'kills' => fake()->numberBetween(1, 10),
-                'points' => fake()->numberBetween(1, 10),
+                'waves' => fake()->numberBetween(1, 10),
                 'boss1lvl' => fake()->numberBetween(1, 10),
                 'boss2lvl' => fake()->numberBetween(1, 10),
                 'boss3lvl' => fake()->numberBetween(1, 10),

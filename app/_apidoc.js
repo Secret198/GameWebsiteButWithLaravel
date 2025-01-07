@@ -251,7 +251,7 @@
      * @apiSuccess (Success-Normal user) {Number} user.email User's <code>email</code>.
      * @apiSuccess (Success-Normal user) {Number} user.deaths User's <code>deaths</code>.
      * @apiSuccess (Success-Normal user) {Number} user.kills User's <code>kills</code>.
-     * @apiSuccess (Success-Normal user) {Number} user.points User's <code>points</code>.
+     * @apiSuccess (Success-Normal user) {Number} user.waves User's <code>waves</code>.
      * @apiSuccess (Success-Normal user) {Number} user.boss1lvl User's <code>boss1lvl</code>.
      * @apiSuccess (Success-Normal user) {Number} user.boss2lvl User's <code>boss2lvl</code>.
      * @apiSuccess (Success-Normal user) {Number} user.boss3lvl User's <code>boss3lvl</code>.
@@ -278,7 +278,7 @@
      *               "email": "test7@example.com",
      *               "deaths": 5,
      *               "kills": 6,
-     *               "points": 5,
+     *               "waves": 5,
      *               "boss1lvl": 9,
      *               "boss2lvl": 7,
      *               "boss3lvl": 10,
