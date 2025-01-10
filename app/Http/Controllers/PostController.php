@@ -474,6 +474,7 @@ class PostController extends Controller
      * @apiSuccess (Success-Normal user) {String} post.post Post's <code>text</code>.
      * @apiSuccess (Success-Normal user) {String} post.image Post's <code>image</code> encoded with base64 encoding.
      * @apiSuccess (Success-Normal user) {Number} post.likes Post's number of <code>likes</code>.
+     * @apiSuccess (Success-Normal user) {String} post.user <code>name</code> of the user who created the post.
      * @apiSuccess (Success-Normal user) {Date} post.created_at When the <code>post</code> was created.
      * @apiSuccess (Success-Normal user) {Date} post.modified_at When the <code>post</code> was last modified.
      * @apiSuccess (Success-Normal user) {Array} likedPosts Ids of the posts that the user has liked
@@ -488,6 +489,7 @@ class PostController extends Controller
      *               "post": "Yeah body, light weight",
      *               "image": "data:image/jpg;base64;<base64-encoded-image>",
      *               "likes": 0,
+     *               "user": "Test user3"
      *               "created_at": "2024-11-26T17:12:34.000000Z",
      *               "modified_at": "2024-11-26T17:12:34.000000Z"
      *           }
@@ -527,6 +529,7 @@ class PostController extends Controller
                 "post" => $post->post,
                 "image" => $image,
                 "likes" => $post->likes,
+                "user" => $post->user->name,
                 "deleted_at" => $post->deleted_at,
                 "created_at" => $post->created_at,
                 "updated_at" => $post->updated_at
@@ -545,6 +548,7 @@ class PostController extends Controller
                 "post" => $post->post,
                 "image" => $image,
                 "likes" => $post->likes,
+                "user" => $post->user->name,
                 "created_at" => $post->created_at,
                 "updated_at" => $post->updated_at
             ];
@@ -576,6 +580,7 @@ class PostController extends Controller
      * @apiSuccess (Success-Normal user) {Object} post.data Array of all the post data.
      * @apiSuccess (Success-Normal user) {id} post.data.id Post's <code>id</code>.
      * @apiSuccess (Success-Normal user) {String} post.data.post Post's text.
+     * @apiSuccess (Success-Normal user) {String} post.name <code>name</code> of the user who created the post.
      * @apiSuccess (Success-Normal user) {Number} post.data.likes Post's number of <code>likes</code>.
      * @apiSuccess (Success-Normal user) {Date} post.data.created_at When the <code>post</code> was created.
      * @apiSuccess (Success-Normal user) {Date} post.data.modified_at When the <code>post</code> was last modified.
@@ -593,6 +598,7 @@ class PostController extends Controller
      *                      "id": 6,
      *                      "post": "Gryphon. '--you advance twice--' 'Each with a.",
      *                      "likes": 884,
+     *                      "name": "Test user2",
      *                      "created_at": "2024-11-23T13:19:26.000000Z",
      *                      "updated_at": "2024-11-23T13:19:26.000000Z"
      *                  },
@@ -600,6 +606,7 @@ class PostController extends Controller
      *                      "id": 7,
      *                      "post": "I should be like then?' And she went round the.",
      *                      "likes": 345,
+     *                      "name": "Test user2",
      *                      "created_at": "2024-11-23T13:19:26.000000Z",
      *                      "updated_at": "2024-11-23T13:19:26.000000Z"
      *                  },
@@ -608,6 +615,7 @@ class PostController extends Controller
      *                      "id": 35,
      *                      "post": "And I declare it's too bad, that it was indeed.",
      *                      "likes": 1260,
+     *                      "name": "Test user2",
      *                      "created_at": "2024-12-05T18:01:27.000000Z",
      *                      "updated_at": "2024-12-05T18:01:27.000000Z"
      *                  }
@@ -669,22 +677,24 @@ class PostController extends Controller
         $accessToken = PersonalAccessToken::findToken($request->bearerToken())->abilities;
         $accessTokenUser = PersonalAccessToken::findToken($request->bearerToken())->tokenable;
         if(in_array("view-all", $accessToken) || in_array("*", $accessToken)){
-            $posts = Post::withTrashed()->select([
-                "id",
-                "post",
-                "likes",
-                "created_at",
-                "updated_at",
-                "deleted_at"
+            $posts = Post::withTrashed()->join("users", "posts.user_id", "users.id")->select([
+                "posts.id",
+                "posts.post",
+                "posts.likes",
+                "users.name",
+                "posts.created_at",
+                "posts.updated_at",
+                "posts.deleted_at"
             ])->orderBy($sortBy, $sortDir)->paginate(30);
         }
         else{
-            $posts = Post::select([
-                "id",
-                "post",
-                "likes",
-                "created_at",
-                "updated_at",
+            $posts = Post::join("users", "posts.user_id", "users.id")->select([
+                "posts.id",
+                "posts.post",
+                "posts.likes",
+                "users.name",
+                "posts.created_at",
+                "posts.updated_at",
             ])->orderBy($sortBy, $sortDir)->paginate(30);
         }
 
