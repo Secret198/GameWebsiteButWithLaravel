@@ -18,7 +18,7 @@ class DatabaseSeeder extends Seeder
     {
         $seedNum = 10;
         $userBar = progress("Seeding Users", $seedNum);
-        for($i = 0; $i < 10;$i++){
+        for($i = 0; $i < 100;$i++){
             User::factory()->create([
                 'name' => 'Test User'.$i,
                 'email' => 'test'.($i+3).'@example.com',
