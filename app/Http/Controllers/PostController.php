@@ -252,6 +252,7 @@ class PostController extends Controller
                 "post" => $post->post,
                 "image" => $image,
                 "likes" => $post->likes,
+                "user" => $post->user->name,
                 "deleted_at" => $post->deleted_at,
                 "created_at" => $post->created_at,
                 "updated_at" => $post->updated_at
@@ -270,6 +271,7 @@ class PostController extends Controller
                 "post" => $post->post,
                 "image" => $image,
                 "likes" => $post->likes,
+                "user" => $post->user->name,
                 "created_at" => $post->created_at,
                 "updated_at" => $post->updated_at
             ];
