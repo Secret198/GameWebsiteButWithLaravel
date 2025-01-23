@@ -7,6 +7,7 @@ use App\Models\Post;
 use App\Models\User;
 use App\Models\Achievement;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\App;
 use App\Http\Controllers\Controller;
 use Laravel\Sanctum\PersonalAccessToken;
 use Laravel\Sanctum\Http\Middleware\CheckAbilities;
@@ -68,25 +69,51 @@ class UserController extends Controller
 
     public function login(Request $request){
 
+        $languages = $request->getLanguages();
+        if($languages){
+            App::setLocale($languages[0]);
+        }
+        
         $request->validate([
             "email" => "required|email",
             "password"=> "required",
         ]);
 
+       
+
         $email = $request->input("email");
         $password = $request->input("password");
 
         $user = User::where("email", $email)->first();
-        if(!$user || !Hash::check($password, $password ? $user->password : '')){//
+        if(!$user || !Hash::check($password, $password ? $user->password : '')){
+            $errorMessage = "";
+            switch(App::currentLocale()){
+                case "en":
+                    $errorMessage = "Invalid email or password";
+                    break;
+                case "hu":
+                    $errorMessage = "Helytelen email cím vagy jelszó";
+                    break;
+            }
             return response()->json([
-                'message' => "Invalid email or password"       
+                'message' => $errorMessage       
             ], 401);
         }
 
         $user->regenerateToken();
+        $message = "";
+        switch(App::currentLocale()){
+            case "en":
+                $message = "Login successful";
+            break;
+            case "hu":
+                $message = "Bejelentkezés sikeres";
+                break;
+        }
+
 
         return response()->json([
-            "message" => "Login successful",
+            "message" => $message,
             'user' => [
                 "id" =>$user->id,
                 "name" => $user->name,
@@ -147,11 +174,17 @@ class UserController extends Controller
      */
 
     public function register(Request $request){
+        $languages = $request->getLanguages();
+        if($languages){
+            App::setLocale($languages[0]);
+        }
         $request->validate([
             "email" => "required|email",
             "name" => "required|min:3",
             "password" => "required|min:8",
         ]);
+
+       
 
         $name = $request->input("name");
         $email = $request->input("email");
