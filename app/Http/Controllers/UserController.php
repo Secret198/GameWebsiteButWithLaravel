@@ -71,7 +71,7 @@ class UserController extends Controller
 
         $languages = $request->getLanguages();
         if($languages){
-            App::setLocale($languages[0]);
+            App::setLocale($languages[1]);
         }
         
         $request->validate([
@@ -86,34 +86,16 @@ class UserController extends Controller
 
         $user = User::where("email", $email)->first();
         if(!$user || !Hash::check($password, $password ? $user->password : '')){
-            $errorMessage = "";
-            switch(App::currentLocale()){
-                case "en":
-                    $errorMessage = "Invalid email or password";
-                    break;
-                case "hu":
-                    $errorMessage = "Helytelen email cím vagy jelszó";
-                    break;
-            }
+           
             return response()->json([
-                'message' => $errorMessage       
+                'message' => __("messages.loginFail")      
             ], 401);
         }
 
         $user->regenerateToken();
-        $message = "";
-        switch(App::currentLocale()){
-            case "en":
-                $message = "Login successful";
-            break;
-            case "hu":
-                $message = "Bejelentkezés sikeres";
-                break;
-        }
-
 
         return response()->json([
-            "message" => $message,
+            "message" => __("messages.loginSuccess"),
             'user' => [
                 "id" =>$user->id,
                 "name" => $user->name,
@@ -176,7 +158,7 @@ class UserController extends Controller
     public function register(Request $request){
         $languages = $request->getLanguages();
         if($languages){
-            App::setLocale($languages[0]);
+            App::setLocale($languages[1]);
         }
         $request->validate([
             "email" => "required|email",
@@ -193,7 +175,7 @@ class UserController extends Controller
         $userAlreadyExists = User::where("email", $email)->first();
         if($userAlreadyExists){
             return response()->json([
-                "message" => "There is already an account with this email address"
+                "message" => __("messages.accountExists")
             ], 409);
         }
         
@@ -213,7 +195,7 @@ class UserController extends Controller
         $user->token = $user->createToken("access", $user->baseAbilities)->plainTextToken;
 
         return response()->json([
-            "message" => "User registered successfully",
+            "message" => __("messages.registerSuccess"),
             "user" => [
                 "id" => $user->id,
                 "token" => $user->token,
@@ -255,7 +237,11 @@ class UserController extends Controller
      *    @apiVersion 0.1.0
      */
 
-    public function makeUserAdmin($id){
+    public function makeUserAdmin(Request $request, $id){
+        $languages = $request->getLanguages();
+        if($languages){
+            App::setLocale($languages[1]);
+        }
         $user = User::findOrFail($id);
 
         $user->tokens()->delete();
@@ -264,7 +250,7 @@ class UserController extends Controller
         $user->save();
 
         return response()->json([
-            "message" => "Admin created successfully",
+            "message" => __("messages.createAdmin"),
             "user"=> $user
             ]);
     }
@@ -336,6 +322,11 @@ class UserController extends Controller
      */
 
     public function update(Request $request, $id){
+
+        $languages = $request->getLanguages();
+        if($languages){
+            App::setLocale($languages[1]);
+        }
         $request->validate([
             "name" => "nullable|min:3",
             "email" => "nullable|email",
@@ -351,7 +342,7 @@ class UserController extends Controller
         $user = User::withTrashed()->findOrFail($id);
         if($accessTokenUser->id != $user->id && $accessTokenUser->privilege != 10){ 
             return response()->json([
-                "message" => "Action not allowed"
+                "message" => __("messages.invalidAction")
             ], 403);
         }
 
@@ -359,7 +350,7 @@ class UserController extends Controller
         $user->checkForAchievements();
 
         return response()->json([
-            "message" => "User updated successfully",
+            "message" => __("messages.userUpdateSuccess"),
             "user" => [
                 "id" => $user->id,
                 "name" => $user->name,
@@ -426,8 +417,11 @@ class UserController extends Controller
      *    @apiVersion 0.3.0
      */
 
-    public function delete($id){ 
-
+    public function delete(Request $request, $id){ 
+        $languages = $request->getLanguages();
+        if($languages){
+            App::setLocale($languages[1]);
+        }
         $user = User::findOrFail($id);
         
         $user->timestamps = false;
@@ -435,7 +429,7 @@ class UserController extends Controller
         $user->timestamps = true;
 
         return response()->json([
-            "message" => "User deleted successfully",
+            "message" => __("messages.userDeleteSuccess"),
             "user" => $user
         ]);
     }
@@ -490,11 +484,15 @@ class UserController extends Controller
      *    @apiVersion 0.3.0
      */
 
-    public function restore($id){
+    public function restore(Request $request, $id){
+        $languages = $request->getLanguages();
+        if($languages){
+            App::setLocale($languages[1]);
+        }
         $user = User::withTrashed()->findOrFail($id);
         if(!$user){
             return response()->json([
-                "message" => "Unable to find user"
+                "message" => __("messages.unableToFindUser")
             ]);
         }
         $user->timestamps = false;
@@ -504,7 +502,7 @@ class UserController extends Controller
         $user->regenerateToken();
         unset($user->token);
         return response()->json([
-            "message" => "User restored successfully",
+            "message" => __("messages.userRestoreSuccess"),
             "user" => $user
         ]);
     }
@@ -582,6 +580,11 @@ class UserController extends Controller
      */
 
     public function getUserData(Request $request, $id){ 
+        $languages = $request->getLanguages();
+        if($languages){
+            App::setLocale($languages[1]);
+        }
+
         $accessToken = PersonalAccessToken::findToken($request->bearerToken())->abilities;
         if(in_array("view-all", $accessToken) || in_array("*", $accessToken)){
             $user = User::withTrashed()->findOrFail($id);
@@ -707,6 +710,11 @@ class UserController extends Controller
      */
 
     public function getAllUsers(Request $request, $sortByStr, $sortDirStr){
+        $languages = $request->getLanguages();
+        if($languages){
+            App::setLocale($languages[1]);
+        }
+
         $sortBy = request()->query("sort_by", $sortByStr);
         $sortDir = request()->query("sort_dir", $sortDirStr);
         $accessToken = PersonalAccessToken::findToken($request->bearerToken())->abilities;
@@ -826,6 +834,12 @@ class UserController extends Controller
      */
 
     public function getOwnPosts(Request $request, $sortByStr, $sortDirStr){
+
+        $languages = $request->getLanguages();
+        if($languages){
+            App::setLocale($languages[1]);
+        }
+
         $token = PersonalAccessToken::findToken($request->bearerToken());
 
         $userId = $token->tokenable->id;
@@ -959,6 +973,12 @@ class UserController extends Controller
      */
 
     public function searchOwnPosts(Request $request, $sortByStr, $sortDirStr, $search){
+
+        $languages = $request->getLanguages();
+        if($languages){
+            App::setLocale($languages[1]);
+        }
+
         $sortBy = request()->query("sort_by", $sortByStr);
         $sortDir = request()->query("sort_dir", $sortDirStr);
         $accessToken = PersonalAccessToken::findToken($request->bearerToken());
@@ -1082,6 +1102,12 @@ class UserController extends Controller
      */
 
     public function searchUsers(Request $request, $sortByStr, $sortDirStr, $search){
+
+        $languages = $request->getLanguages();
+        if($languages){
+            App::setLocale($languages[1]);
+        }
+        
         $sortBy = request()->query("sort_by", $sortByStr);
         $sortDir = request()->query("sort_dir", $sortDirStr);
         $accessToken = PersonalAccessToken::findToken($request->bearerToken())->abilities;

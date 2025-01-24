@@ -2,14 +2,15 @@
 
 namespace App\Http\Controllers;
 
-use Laravel\Sanctum\PersonalAccessToken;
 use Storage;
 use App\Models\Post;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\App;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Hash;
+use Laravel\Sanctum\PersonalAccessToken;
 
 class PostController extends Controller
 {
@@ -51,6 +52,12 @@ class PostController extends Controller
      */
 
     public function create(Request $request){
+
+        $languages = $request->getLanguages();
+        if($languages){
+            App::setLocale($languages[1]);
+        }
+        
         $request->validate([
             "post" => "required|min:10|max:65534",
             "image" => "nullable|is_image:jpeg,jpg,png|base64_image_size:500", 
@@ -83,7 +90,7 @@ class PostController extends Controller
         $post->save();
 
         return response()->json([
-            "message" => "Post created successfully",
+            "message" => __("messages.postCreateSuccess"),
             "post" => [
                 "id" => $post->id,
             ]
@@ -129,6 +136,12 @@ class PostController extends Controller
      */
 
     public function update(Request $request, $id){
+
+        $languages = $request->getLanguages();
+        if($languages){
+            App::setLocale($languages[1]);
+        }
+
         $request->validate([
             "post" => "nullable|min:10|max:65534",
             "image" => "nullable|is_image:jpeg,jpg,png|base64_image_size:500", 
@@ -138,7 +151,7 @@ class PostController extends Controller
         $post = Post::withTrashed()->findOrFail($id);
         if($accessTokenUser->id != $post->user_id && $accessTokenUser->privilege != 10){
             return response()->json([
-                "message" => "Action not allowed"
+                "message" => __("messsages.invalidAction")
             ], 401);
         }
 
@@ -152,7 +165,7 @@ class PostController extends Controller
         $post->save();
 
         return response()->json([
-            "message"=> "Post updated successfully",
+            "message"=> __("messages.postUpdateSuccess"),
             "post" => [
                 "id"=> $post->id,
             ]
@@ -202,6 +215,12 @@ class PostController extends Controller
      */
 
     public function likePost(Request $request, $id){
+
+        $languages = $request->getLanguages();
+        if($languages){
+            App::setLocale($languages[1]);
+        }
+
         $request->validate([
             "likes" => "required|boolean"
         ]);
@@ -223,16 +242,16 @@ class PostController extends Controller
             $post->likes += 1;
             $accessToken->tokenable->likedPosts()->attach($post->id);
             
-            $responseMessage = "Post liked successfully";
+            $responseMessage = __("messages.postLikeSuccess");
         }
         else if($request->likes == false && in_array($post->id, $likedPostsIds)){
             $post->likes -= 1;
             $accessToken->tokenable->likedPosts()->detach($post->id);
 
-            $responseMessage = "Unliked successfully";
+            $responseMessage = __("messages.postUnlikeSuccess");
         }
         else{
-            $responseMessage = "Post is already liked or already unliked";
+            $responseMessage = __("messages.postLikeError");
         }
 
         $post->timestamps = false;
@@ -327,11 +346,16 @@ class PostController extends Controller
 
     public function delete(Request $request, $id)
     {
+        $languages = $request->getLanguages();
+        if($languages){
+            App::setLocale($languages[1]);
+        }
+        
         $accessToken = PersonalAccessToken::findToken($request->bearerToken());
         $post = Post::findOrFail($id);
         if($accessToken->tokenable->id != $post->user_id && $accessToken->tokenable->privilege != 10){ 
             return response()->json([
-                "message" => "Action not allowed"
+                "message" => __("messages.invalidAction")
             ], 401);
         }
         $post->timestamps = false;
@@ -378,7 +402,7 @@ class PostController extends Controller
         // }
 
         return response()->json([
-            "message" => "Post deleted successfully",
+            "message" => __("messages.postDeleteSuccess"),
             "post" => $data
         ]);
     }
@@ -425,7 +449,12 @@ class PostController extends Controller
      *    @apiVersion 0.3.0
      */
 
-    public function restore($id){ 
+    public function restore(Request $request, $id){ 
+
+        $languages = $request->getLanguages();
+        if($languages){
+            App::setLocale($languages[1]);
+        }
 
         $post = Post::withTrashed()->findOrFail($id);
 
@@ -451,7 +480,7 @@ class PostController extends Controller
         ];
 
         return response()->json([
-            "message" => "Post restored successfully",
+            "message" => __("messages.postRestoreSuccess"),
             "post" => $data
         ]);
         
@@ -505,6 +534,12 @@ class PostController extends Controller
      */
 
     public function getPostData(Request $request, $id){ 
+
+        $languages = $request->getLanguages();
+        if($languages){
+            App::setLocale($languages[1]);
+        }
+
         $accessToken = PersonalAccessToken::findToken($request->bearerToken());
 
 
@@ -674,6 +709,12 @@ class PostController extends Controller
      */
 
     public function getAllPosts(Request $request, $sortByStr, $sortDirStr){
+
+        $languages = $request->getLanguages();
+        if($languages){
+            App::setLocale($languages[1]);
+        }
+
         $sortBy = request()->query("sort_by", $sortByStr);
         $sortDir = request()->query("sort_dir", $sortDirStr);
         $accessToken = PersonalAccessToken::findToken($request->bearerToken())->abilities;
@@ -811,6 +852,12 @@ class PostController extends Controller
      */
 
     public function searchPosts(Request $request, $sortByStr, $sortDirStr, $search){
+
+        $languages = $request->getLanguages();
+        if($languages){
+            App::setLocale($languages[1]);
+        }
+        
         $sortBy = request()->query("sort_by", $sortByStr);
         $sortDir = request()->query("sort_dir", $sortDirStr);
         $accessToken = PersonalAccessToken::findToken($request->bearerToken())->abilities;

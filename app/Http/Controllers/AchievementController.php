@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Achievement;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\App;
 use Laravel\Sanctum\PersonalAccessToken;
 
 class AchievementController extends Controller
@@ -58,6 +59,12 @@ class AchievementController extends Controller
      */
 
     public function create(Request $request){
+
+        $languages = $request->getLanguages();
+        if($languages){
+            App::setLocale($languages[1]);
+        }
+        
         $request->validate([
             "name" => "required",
             "field" => "required",
@@ -67,7 +74,7 @@ class AchievementController extends Controller
 
         if(($request->field == "boss1lvl" || $request->field == "boss2lvl" || $request->field == "boss3lvl") && $request->threshold > 1 ){
             return response()->json([
-                "message" => "Threshold must be 0 or 1"
+                "message" => __("messages.achievementBossThresholdError")
             ], 400);
         }
 
@@ -78,7 +85,7 @@ class AchievementController extends Controller
         $achievement->description = $request->description;
         $achievement->save();
         return response()->json([
-            "message"=> "Achievement created successfully",
+            "message"=> __("messages.achievementCreateSuccess"),
             "achievement" => [
                 "id"=> $achievement->id,
                 "name"=> $achievement->name,
@@ -126,6 +133,12 @@ class AchievementController extends Controller
      */
 
     public function update(Request $request, $id){
+
+        $languages = $request->getLanguages();
+        if($languages){
+            App::setLocale($languages[1]);
+        }
+
         $request->validate([
             "name" => "nullable",
             "field" => "nullable",
@@ -135,7 +148,7 @@ class AchievementController extends Controller
 
         if(($request->field == "boss1lvl" || $request->field == "boss2lvl" || $request->field == "boss3lvl") && $request->threshold > 1 ){
             return response()->json([
-                "message" => "Threshold must be 0 or 1"
+                "message" => __("messages.achievementBossThresholdError")
             ], 400);
         }
 
@@ -143,7 +156,7 @@ class AchievementController extends Controller
         $achievement->update($request->all());
 
         return response()->json([
-            "message"=> "Achievement updated successfully",
+            "message"=> __("messages.achievementUpdateSuccess"),
             "achievement" => [
                 "id" => $achievement->id
             ]
@@ -183,7 +196,12 @@ class AchievementController extends Controller
      *    @apiVersion 0.1.0
      */
 
-    public function show(string $id){
+    public function show(Request $request, string $id){
+        $languages = $request->getLanguages();
+        if($languages){
+            App::setLocale($languages[1]);
+        }
+
         $achievement = Achievement::withTrashed()->findOrFail($id);
 
         return response()->json([
@@ -214,11 +232,17 @@ class AchievementController extends Controller
      *    @apiVersion 0.1.0
      */
 
-    public function delete($id){
+    public function delete(Request $request, $id){
+
+        $languages = $request->getLanguages();
+        if($languages){
+            App::setLocale($languages[1]);
+        }
+
         $achievement = Achievement::findOrFail($id);
         $achievement->delete();
         return response()->json([
-            "message"=> "Achievement deleted successfully",
+            "message"=> __("messages.achievementDeleteSuccess"),
             "achievement" => $achievement
         ]);
     }
@@ -246,11 +270,16 @@ class AchievementController extends Controller
      *    @apiVersion 0.1.0
      */
 
-    public function restore($id){
+    public function restore(Request $request, $id){
+        $languages = $request->getLanguages();
+        if($languages){
+            App::setLocale($languages[1]);
+        }
+
         $achievement = Achievement::withTrashed()->findOrFail($id);
         $achievement->restore();
         return response()->json([
-            "message"=> "Achievement restored successfully",
+            "message"=> __("messages.achievementRestoreSuccess"),
             "achievement" => $achievement
         ]);
     }
@@ -285,6 +314,11 @@ class AchievementController extends Controller
      */
 
     public function getAllAchievements(Request $request){
+        $languages = $request->getLanguages();
+        if($languages){
+            App::setLocale($languages[1]);
+        }
+        
         $accessToken = PersonalAccessToken::findToken($request->bearerToken());
         if($accessToken && (in_array("achievement-delete", $accessToken->abilities) || in_array("*", $accessToken->abilities))){
             $achievements = Achievement::withTrashed()->select([
