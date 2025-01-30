@@ -24,4 +24,5 @@ return [
     "achievementDeleteSuccess" => "Achievement deleted successfully",
     "achievementRestoreSuccess" => "Achievement restored successfully",
     "unauthenticated" => "Unauthenticated",
+    "logout" => "Logout successful",
 ];

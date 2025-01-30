@@ -71,7 +71,12 @@ class PostController extends Controller
         $post->likes = 0;
 
         $latestPost = Post::orderBy("id", "desc")->first()->id;
-        $latestPost++;
+        if(!$latestPost){
+            $latestPost = 1;
+        }
+        else{
+            $latestPost++;
+        }
 
         //Process image
         // $image = base64_decode($request->image);

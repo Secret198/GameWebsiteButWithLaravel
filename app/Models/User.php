@@ -56,6 +56,19 @@ class User extends Authenticatable
         }
     }
 
+    public function LoginTokenHandle(){
+        
+        switch($this->privilege){
+            case 1:
+                $this->token = $this->createToken("access", $this->baseAbilities)->plainTextToken;       
+                break;
+            case 10:
+                $this->token = $this->createToken("access", ["*"])->plainTextToken;       
+                break;
+        }
+        
+    }
+
     private function canhave($field, $threshold){
         switch($field){
             case "deaths":

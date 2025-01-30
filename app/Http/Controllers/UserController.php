@@ -92,7 +92,8 @@ class UserController extends Controller
             ], 401);
         }
 
-        $user->regenerateToken();
+        // $user->regenerateToken();
+        $user->LoginTokenHandle();
 
         return response()->json([
             "message" => __("messages.loginSuccess"),
@@ -107,6 +108,35 @@ class UserController extends Controller
                 "token" => $user->token,
                 "privilege" => $user->privilege
             ],
+        ]);
+    }
+
+    /**
+     * @api {patch} /user/logout Logout
+     * @apiGroup User
+     * @apiUse HeadersWithToken
+     * @apiError Unauthenticated User making the request is not logged in or has outdated access token.
+     * @apiErrorExample {json} Error-Response:
+     *     HTTP/1.1 401 Unathorized
+     *     {
+     *       "message": "Unauthenticated."
+     *     }
+     * @apiPermission normal user
+     * @apiSuccess {String} message Information about the logout process.
+     *    @apiSuccessExample {json} Success-Response:
+     *    HTTP/1.1 200 OK
+     *     {
+     *         "message": "Logout successful",
+     *     }
+     *    @apiVersion 0.3.0
+     */
+
+    public function logout(Request $request){
+
+        $request->user()->currentAccessToken()->delete();
+
+        return response()->json([
+            "message" => __("messages.logout")
         ]);
     }
 

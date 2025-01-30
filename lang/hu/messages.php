@@ -24,4 +24,5 @@ return [
     "achievementDeleteSuccess" => "Achievement sieresen törölve",
     "achievementRestoreSuccess" => "Achievement sikeresen visszaállítva",
     "unauthenticated" => "Nincs bejelentkezve",
+    "logout" => "Kijelentkezés sikeres",
 ];
