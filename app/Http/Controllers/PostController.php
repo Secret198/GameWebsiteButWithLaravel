@@ -276,7 +276,7 @@ class PostController extends Controller
                 "post" => $post->post,
                 "image" => $image,
                 "likes" => $post->likes,
-                "user" => $post->user->name,
+                "name" => $post->user->name,
                 "deleted_at" => $post->deleted_at,
                 "created_at" => $post->created_at,
                 "updated_at" => $post->updated_at
@@ -295,7 +295,7 @@ class PostController extends Controller
                 "post" => $post->post,
                 "image" => $image,
                 "likes" => $post->likes,
-                "user" => $post->user->name,
+                "name" => $post->user->name,
                 "created_at" => $post->created_at,
                 "updated_at" => $post->updated_at
             ];
@@ -525,7 +525,7 @@ class PostController extends Controller
      *               "post": "Yeah body, light weight",
      *               "image": "data:image/jpg;base64;<base64-encoded-image>",
      *               "likes": 0,
-     *               "user": "Test user3"
+     *               "name": "Test user3"
      *               "created_at": "2024-11-26T17:12:34.000000Z",
      *               "modified_at": "2024-11-26T17:12:34.000000Z"
      *           }
@@ -571,7 +571,7 @@ class PostController extends Controller
                 "post" => $post->post,
                 "image" => $image,
                 "likes" => $post->likes,
-                "user" => $post->user->name,
+                "name" => $post->user->name,
                 "deleted_at" => $post->deleted_at,
                 "created_at" => $post->created_at,
                 "updated_at" => $post->updated_at
@@ -590,7 +590,7 @@ class PostController extends Controller
                 "post" => $post->post,
                 "image" => $image,
                 "likes" => $post->likes,
-                "user" => $post->user->name,
+                "name" => $post->user->name,
                 "created_at" => $post->created_at,
                 "updated_at" => $post->updated_at
             ];
