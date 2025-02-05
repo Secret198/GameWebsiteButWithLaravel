@@ -25,4 +25,5 @@ return [
     "achievementRestoreSuccess" => "Achievement restored successfully",
     "unauthenticated" => "Unauthenticated",
     "logout" => "Logout successful",
+    "invalidLeaderBoard" => "Field used for ordering could not be found"
 ];

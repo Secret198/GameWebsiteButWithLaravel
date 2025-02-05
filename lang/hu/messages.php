@@ -25,4 +25,5 @@ return [
     "achievementRestoreSuccess" => "Achievement sikeresen visszaállítva",
     "unauthenticated" => "Nincs bejelentkezve",
     "logout" => "Kijelentkezés sikeres",
+    "invalidLeaderBoard" => "A sorba rendezéshez használt mező nem található"
 ];

@@ -1165,12 +1165,19 @@ class UserController extends Controller
            
     }
 
-    public function leaderboard($leaderBy){
+    public function leaderboard($leaderByStr){
+
+        if(!in_array($leaderByStr, ["kills", "waves", "deaths"])){
+            return response()->json([
+                "message" => __("messages.invalidLeaderBoard")
+            ]);
+        }
+
         $users = User::select([
             "id",
             "name",
-            $leaderBy
-        ])->orderBy($leaderBy, "desc");
+            $leaderByStr
+        ])->orderBy($leaderByStr, "desc")->limit(10)->get();
 
         return response()->json([
             "users" => $users
