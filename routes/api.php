@@ -21,6 +21,7 @@ Route::get("/user/all/{sortByStr}/{sortDirStr}", [UserController::class, "getAll
 Route::get("/user/{sortByStr}/{sortDirStr}", [UserController::class, "getOwnPosts"])->middleware(["auth:sanctum", "abilities:user-view"]);
 Route::get("/user/search/{sortByStr}/{sortDirStr}/{search}", [UserController::class, "searchUsers"])->middleware(["auth:sanctum", "abilities:user-view"]);
 Route::get("user/post/search/{sortByStr}/{sortDirStr}/{search}", [UserController::class, "searchOwnPosts"])->middleware(["auth:sanctum", "abilities:user-view"]);
+Route::get("/user/leader/{leaderBy}", [UserController::class, "leaderboard"]);
 
 //Post routes
 Route::post("/post", [PostController::class,"create"])->middleware(["auth:sanctum","abilities:post-create"]);

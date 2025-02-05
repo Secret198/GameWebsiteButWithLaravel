@@ -1165,4 +1165,16 @@ class UserController extends Controller
            
     }
 
+    public function leaderboard($leaderBy){
+        $users = User::select([
+            "id",
+            "name",
+            $leaderBy
+        ])->orderBy($leaderBy, "desc");
+
+        return response()->json([
+            "users" => $users
+        ]);
+    }
+
 }
