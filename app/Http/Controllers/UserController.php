@@ -1165,12 +1165,63 @@ class UserController extends Controller
            
     }
 
+    /**
+     * @api {get} /user/leader/{leaderByStr} Get leaderboard
+     * @apiDescription Getting user data in descending order according to parameter
+     * @apiParam {String} leaderByStr Field to be used to order the user datas by
+     * @apiGroup User
+     * @apiHeaderExample {json} Request-headers:
+     * {
+     *  "Accept": "Application/json",
+     *  "Content-type": "Application/json"
+     * }
+     * @apiError FieldCoundNotBeFound. leaderByStr could not be found in the columns of the user table.
+     * @apiErrorExample {json} Error-Response:
+     *     HTTP/1.1 401 Unathorized
+     *       {
+     *           "message": "Field used for ordering could not be found"
+     *       }
+     * @apiPermission normal user
+     * @apiSuccess {Object} users Data of the users with highest values.
+     * @apiSuccess {Number} users.id <code>id</code> of the user.
+     * @apiSuccess {String} users.name <code>name</code> of the user.
+     * @apiSuccess {Number} users.field User The field the users are ordered by.
+     * 
+     * @apiSuccessExample {json} Success-Response:
+     *    HTTP/1.1 200 OK
+     *      {
+     *          "users": [
+     *              {
+     *                  "id": 3,
+     *                  "name": "Test User2",
+     *                  "kills": 10
+     *              },
+     *              {
+     *                  "id": 22,
+     *                  "name": "Test User21",
+     *                  "kills": 10
+     *              },
+     *              {
+     *                  "id": 30,
+     *                  "name": "Test User29",
+     *                  "kills": 10
+     *              },
+     *              {
+     *                  "id": 43,
+     *                  "name": "Test User42",
+     *                  "kills": 10
+     *              }
+     *          ]
+     *      }
+     *    @apiVersion 0.3.0
+     */
+
     public function leaderboard($leaderByStr){
 
         if(!in_array($leaderByStr, ["kills", "waves", "deaths"])){
             return response()->json([
                 "message" => __("messages.invalidLeaderBoard")
-            ]);
+            ], 404);
         }
 
         $users = User::select([
