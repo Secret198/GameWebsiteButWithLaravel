@@ -161,7 +161,9 @@ class PostController extends Controller
         }
 
         if(isset($request->image)){
-            Storage::disk("local")->delete($post->image);
+            if($post->image){
+                Storage::disk("local")->delete($post->image);
+            }
             $imageName = $post->processImage($request->image, $post->id);
             $post->image = $imageName;
         }
@@ -379,6 +381,7 @@ class PostController extends Controller
             "post" => $post->post,
             "image" => $image,
             "likes" => $post->likes,
+            "name" => $post->user->name,
             "deleted_at" => $post->deleted_at,
             "created_at" => $post->created_at,
             "updated_at" => $post->updated_at
@@ -479,6 +482,7 @@ class PostController extends Controller
             "post" => $post->post,
             "image" => $image,
             "likes" => $post->likes,
+            "name" => $post->user->name,
             "deleted_at" => $post->deleted_at,
             "created_at" => $post->created_at,
             "updated_at" => $post->updated_at
