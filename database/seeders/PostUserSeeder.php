@@ -16,17 +16,14 @@ class PostUserSeeder extends Seeder
      */
     public function run(): void
     {
-        $seedNum = 10;
 
-        $users = User::select('id')->get()->toArray();
-        $achievements = Achievement::select('id')->get()->toArray();
-        $bar = progress("Seeding Post User connect", $seedNum);
+        $users = User::all();
+        $seedNum = count($users);
+
+        $bar = progress("Seeding Achievement User connect", $seedNum);
         
-        for( $i = 0; $i < $seedNum; $i++ ){   
-            DB::table('achievement_user')->insert([
-                'user_id' => fake()->randomElement($users)['id'],
-                'achievement_id' => fake()->randomElement($achievements)['id'],
-            ]);
+        foreach($users as $user){
+            $user->checkForAchievements();
             $bar->advance();
         }
 

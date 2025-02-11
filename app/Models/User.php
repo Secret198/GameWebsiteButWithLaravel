@@ -86,7 +86,7 @@ class User extends Authenticatable
                     return false;
                 }
 
-            case "poinst":
+            case "waves":
                 if($this->waves >= $threshold){
                     return true;
                 }
