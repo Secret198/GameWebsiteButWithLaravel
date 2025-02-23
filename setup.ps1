@@ -3,10 +3,10 @@ $dbUser
 $dbPassword
 
 $mysql = "C:\xampp\mysql\bin\mysql.exe"
-$params = "-u ", $dbUser, '-p""'
+$params = "-u", $dbUser, "--password=", $dbPassword
 
 if(Test-Path .env){
-    $envContent = Get-Content .\.env
+    $envContent = Get-Content .\.env -Encoding UTF8
     foreach($var in $envContent){
         $splitVar = $var.Split('=')
         
@@ -22,13 +22,18 @@ if(Test-Path .env){
              }
             Default {}
         }
-
-        & $mysql @params -e "SHOW DATABASES"
     }
 
-    Write-Output $dbName
-    Write-Output $dbUser
-    Write-Output $dbPassword
+    Write-Host "Függőségek telepítése..."
+    composer install
+    Write-Host "Adatabázis létrehozása..."
+    & $mysql @params -e "CREATE DATABASE IF NOT EXISTS $dbName DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci"
+    Write-Host "Kulcs generálása..."
+    php artisan key:generate
+    Write-Host "Táblák létrehozása"
+    php artisan migrate
+    Write-Host "Adatabázis feltöltése teszt adatokkal..."
+    php artisan db:seed
 }
 else{
     throw ".env fájl nem létezik"
