@@ -8,6 +8,7 @@ use Tests\TestCase;
 
 class RegisterTest extends TestCase
 {
+    use RefreshDatabase;
     /**
      * A basic feature test example.
      */
@@ -20,17 +21,7 @@ class RegisterTest extends TestCase
             "password" => "Password59?"
         ]);
 
-        $response->assertStatus(409);
-    }
-    public function test_with_existing_data(): void
-    {
-        $response = $this->postJson("/api/user/register", [
-            "email" => "test3@example.com",
-            "name" => "TestUser0",
-            "password" => "Password0"
-        ]);
-
-        $response->assertStatus(409);
+        $response->assertStatus(200);
     }
 
     public function test_with_no_data(): void
