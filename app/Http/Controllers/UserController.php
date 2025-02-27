@@ -102,6 +102,7 @@ class UserController extends Controller
                 "name" => $user->name,
                 "deaths" => $user->deaths,
                 "waves" => $user->waves,
+                "kills" => $user->kills,
                 "boss1lvl" => $user->boss1lvl,
                 "boss2lvl" => $user->boss2lvl,
                 "boss3lvl" => $user->boss3lvl,
