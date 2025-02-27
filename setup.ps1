@@ -3,7 +3,6 @@ $dbUser
 $dbPassword
 
 $mysql = "C:\xampp\mysql\bin\mysql.exe"
-$params = "-u", $dbUser, "--password=", $dbPassword
 
 if(Test-Path .env){
     $envContent = Get-Content .\.env -Encoding UTF8
@@ -27,7 +26,7 @@ if(Test-Path .env){
     Write-Host "Függőségek telepítése..."
     composer install
     Write-Host "Adatabázis létrehozása..."
-    & $mysql @params -e "CREATE DATABASE IF NOT EXISTS $dbName DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci"
+    & $mysql --user=$dbUser --password=$dbPassword -e "CREATE DATABASE IF NOT EXISTS $dbName DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci"
     Write-Host "Kulcs generálása..."
     php artisan key:generate
     Write-Host "Táblák létrehozása"
