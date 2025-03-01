@@ -33,6 +33,8 @@ if(Test-Path .env){
     php artisan migrate
     Write-Host "Adatabázis feltöltése teszt adatokkal..."
     php artisan db:seed
+    Write-Host "Szerver indítása"
+    php artisan serve
 }
 else{
     throw ".env fájl nem létezik"
