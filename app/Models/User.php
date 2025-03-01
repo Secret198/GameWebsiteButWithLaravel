@@ -71,48 +71,18 @@ class User extends Authenticatable
     private function canhave($field, $threshold){
         switch($field){
             case "deaths":
-                if($this->deaths >= $threshold){
-                    return true;
-                }
-                else{
-                    return false;
-                }
+                return $this->deaths >= $threshold;
             case "kills":
-                if($this->kills >= $threshold){
-                    return true;
-                }
-                else{
-                    return false;
-                }
-
+                return $this->kills >= $threshold;
             case "waves":
-                if($this->waves >= $threshold){
-                    return true;
-                }
-                else{
-                    return false;
-                }
+                return $this->waves >= $threshold;
             case "boss1lvl":
-                if($this->boss1lvl >= $threshold){
-                    return true;
-                }
-                else{
-                    return false;
-                }
+                return $this->boss1lvl >= $threshold;
             case "boss2lvl":
-                if($this->boss2lvl >= $threshold){
-                    return true;
-                }
-                else{
-                    return false;
-                }
+                return $this->boss2lvl >= $threshold;
             case "boss3lvl":
-                if($this->boss3lvl >= $threshold){
-                    return true;
-                }
-                else{
-                    return false;
-                }
+                return $this->boss3lvl >= $threshold;
+                
         }
     }
 
