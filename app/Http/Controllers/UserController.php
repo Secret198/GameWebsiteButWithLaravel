@@ -879,22 +879,24 @@ class UserController extends Controller
         $sortDir = request()->query("sort_dir", $sortDirStr);
         $tokenAbilities = $token->abilities;
         if(in_array("view-all", $tokenAbilities) || in_array("*", $tokenAbilities)){
-            $posts = Post::withTrashed()->select([
-                "id",
-                "post",
-                "likes",
-                "created_at",
-                "updated_at",
-                "deleted_at"
+            $posts = Post::withTrashed()->join("users", "posts.user_id", "users.id")->select([
+                "posts.id",
+                "posts.post",
+                "posts.likes",
+                "users.name",
+                "posts.created_at",
+                "posts.updated_at",
+                "posts.deleted_at"
             ])->where("user_id", $userId)->orderBy($sortBy, $sortDir)->paginate(30);
         }
         else{
-            $posts = Post::select([
-                "id",
-                "post",
-                "likes",
-                "created_at",
-                "updated_at",
+            $posts = Post::join("users", "posts.user_id", "users.id")->select([
+                "posts.id",
+                "posts.post",
+                "posts.likes",
+                "users.name",
+                "posts.created_at",
+                "posts.updated_at",
             ])->where("user_id", $userId)->orderBy($sortBy, $sortDir)->paginate(30);
         }
 
