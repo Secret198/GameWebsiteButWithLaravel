@@ -872,22 +872,24 @@ class PostController extends Controller
         $accessToken = PersonalAccessToken::findToken($request->bearerToken())->abilities;
         $accessTokenUser = PersonalAccessToken::findToken($request->bearerToken())->tokenable;
         if(in_array("view-all", $accessToken) || in_array("*", $accessToken)){
-            $posts = Post::withTrashed()->select([
-                "id",
-                "post",
-                "likes",
-                "created_at",
-                "updated_at",
-                "deleted_at"
+            $posts = Post::withTrashed()->join("users", "posts.user_id", "users.id")->select([
+                "posts.id",
+                "posts.post",
+                "posts.likes",
+                "users.name",
+                "posts.created_at",
+                "posts.updated_at",
+                "posts.deleted_at"
             ])->where("post", "LIKE", "%".$search."%")->orderBy($sortBy, $sortDir)->paginate(30);
         }
         else{
-            $posts = Post::select([
-                "id",
-                "post",
-                "likes",
-                "created_at",
-                "updated_at"
+            $posts = Post::join("users", "posts.user_id", "users.id")->select([
+                "posts.id",
+                "posts.post",
+                "posts.likes",
+                "users.name",
+                "posts.created_at",
+                "posts.updated_at"
             ])->where("post", "LIKE", "%".$search."%")->orderBy($sortBy, $sortDir)->paginate(30);
         }
 

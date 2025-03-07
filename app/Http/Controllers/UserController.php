@@ -1016,24 +1016,26 @@ class UserController extends Controller
         $sortDir = request()->query("sort_dir", $sortDirStr);
         $accessToken = PersonalAccessToken::findToken($request->bearerToken());
         if(in_array("view-all", $accessToken->abilities) || in_array("*", $accessToken->abilities)){
-            $posts = Post::withTrashed()->select([
-                "id",
-                "post",
-                "likes",
-                "created_at",
-                "updated_at",
-                "deleted_at",
+            $posts = Post::withTrashed()->join("users", "posts.user_id", "users.id")->select([
+                "posts.id",
+                "posts.post",
+                "posts.likes",
+                "users.name",
+                "posts.created_at",
+                "posts.updated_at",
+                "posts.deleted_at",
             ])->where("user_id", $accessToken->tokenable->id)
             ->where("post", "LIKE", "%".$search."%")
             ->orderBy($sortBy, $sortDir)->paginate(30);
         }
         else{
-            $posts = Post::select([
-                "id",
-                "post",
-                "likes",
-                "created_at",
-                "updated_at",
+            $posts = Post::join("users", "posts.user_id", "users.id")->select([
+                "posts.id",
+                "posts.post",
+                "posts.likes",
+                "users.name",
+                "posts.created_at",
+                "posts.updated_at",
             ])->where("user_id", $accessToken->tokenable->id)
             ->where("post", "LIKE", "%".$search."%")
             ->orderBy($sortBy, $sortDir)->paginate(30);
