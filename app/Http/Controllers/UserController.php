@@ -617,6 +617,9 @@ class UserController extends Controller
         }
 
         $accessToken = PersonalAccessToken::findToken($request->bearerToken())->abilities;
+
+        $achievementCount = Achievement::count();
+
         if(in_array("view-all", $accessToken) || in_array("*", $accessToken)){
             $user = User::withTrashed()->findOrFail($id);
             $data = [
@@ -629,6 +632,7 @@ class UserController extends Controller
                 "boss1lvl" => $user->boss1lvl,
                 "boss2lvl" => $user->boss2lvl,
                 "boss3lvl" => $user->boss3lvl,
+                "achievement_count" => $achievementCount,
                 "deleted_at" => $user->deleted_at,
                 "created_at" => $user->created_at,
                 "updated_at" => $user->updated_at,
@@ -647,6 +651,7 @@ class UserController extends Controller
                 "boss1lvl" => $user->boss1lvl,
                 "boss2lvl" => $user->boss2lvl,
                 "boss3lvl" => $user->boss3lvl,
+                "achievement_count" => $achievementCount,
                 "created_at" => $user->created_at,
                 "privilege" => $user->privilege
             ];
