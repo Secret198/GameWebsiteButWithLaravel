@@ -55,7 +55,7 @@ class User extends Authenticatable
         }
     }
 
-    public function LoginTokenHandle(){
+    public function loginTokenHandle(){
         
         switch($this->privilege){
             case 1:

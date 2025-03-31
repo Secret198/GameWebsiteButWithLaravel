@@ -93,7 +93,7 @@ class UserController extends Controller
         }
 
         // $user->regenerateToken();
-        $user->LoginTokenHandle();
+        $user->loginTokenHandle();
 
         return response()->json([
             "message" => __("messages.loginSuccess"),
