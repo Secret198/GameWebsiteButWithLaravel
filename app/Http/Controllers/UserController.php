@@ -276,7 +276,7 @@ class UserController extends Controller
         $user = User::findOrFail($id);
 
         $user->tokens()->delete();
-        $user->createToken("access", ["*"])->plainTextToken;     //Ha akarjuk akkor egyesével beírogatni
+        $user->createToken("access", ["*"])->plainTextToken;  
         $user->privilege = 10;
         $user->save();
 
