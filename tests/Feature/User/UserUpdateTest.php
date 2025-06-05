@@ -13,6 +13,7 @@ class UserUpdateTest extends TestCase
     /**
      * A basic feature test example.
      */
+    protected $seed = true;
 
     public function test_normal_user_logged_in_update_self(): void
     {

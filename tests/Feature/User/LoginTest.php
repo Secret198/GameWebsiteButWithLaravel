@@ -13,6 +13,7 @@ class LoginTest extends TestCase
     /**
      * A basic feature test example.
      */
+    protected $seed = true;
     public function test_login_with_normal_data(): void
     {
 

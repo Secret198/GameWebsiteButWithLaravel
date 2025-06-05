@@ -13,12 +13,14 @@ class RegisterTest extends TestCase
      * A basic feature test example.
      */
 
+    protected $seed = true;
+
     public function test_with_normal_data(): void
     {
         $response = $this->postJson("/api/user/register", [
-            "email" => "lajos69@lajos.com",
-            "name" => "Lajos2",
-            "password" => "Password59?"
+            "email" => "test3@example.com",
+            "name" => "Test User0",
+            "password" => "password0"
         ]);
 
         $response->assertStatus(200);

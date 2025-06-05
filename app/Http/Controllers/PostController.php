@@ -243,7 +243,7 @@ class PostController extends Controller
             array_push($likedPostsIds, $onePost["id"]);
         }
 
-        $responseMessage = "";
+        $responseMessage = __("messages.postLikeError");
 
         if($request->likes && !in_array($post->id, $likedPostsIds)){
             $post->likes += 1;
@@ -257,20 +257,16 @@ class PostController extends Controller
 
             $responseMessage = __("messages.postUnlikeSuccess");
         }
-        else{
-            $responseMessage = __("messages.postLikeError");
-        }
 
         $post->timestamps = false;
         $post->saveQuietly();
         $post->timestamps = true;
 
         if(in_array("view-all", $accessToken->abilities) || in_array("*", $accessToken->abilities)){
+            $image = "";
+            
             if($post->image){
                 $image = $post->getImage();
-            }
-            else{
-                $image = "";
             }
             
             $data = [
@@ -286,12 +282,11 @@ class PostController extends Controller
         }
         else{
             $post = Post::findOrFail($id);
+            $image = "";
             if($post->image){
                 $image = $post->getImage();
             }
-            else{
-                $image = "";
-            }
+          
             $data = [
                 "id" => $post->id,
                 "post" => $post->post,
@@ -369,12 +364,11 @@ class PostController extends Controller
         $post->deleteQuietly();
         $post->timestamps = true;
 
+        $image = "";
         if($post->image){
             $image = $post->getImage();
         }
-        else{
-            $image = "";
-        }
+       
         
         $data = [
             "id" => $post->id,
@@ -386,28 +380,6 @@ class PostController extends Controller
             "created_at" => $post->created_at,
             "updated_at" => $post->updated_at
         ];
-
-        // if(in_array("view-all", $accessToken->abilities) || in_array("*", $accessToken->abilities)){
-        //     if($post->image){
-        //         $image = $post->getImage();
-        //     }
-        //     else{
-        //         $image = "";
-        //     }
-            
-        //     $data = [
-        //         "id" => $post->id,
-        //         "post" => $post->post,
-        //         "image" => $image,
-        //         "likes" => $post->likes,
-        //         "deleted_at" => $post->deleted_at,
-        //         "created_at" => $post->created_at,
-        //         "updated_at" => $post->updated_at
-        //     ];
-        // }
-        // else{
-        //     $data = "";
-        // }
 
         return response()->json([
             "message" => __("messages.postDeleteSuccess"),
@@ -470,11 +442,9 @@ class PostController extends Controller
         $post->restoreQuietly();
         $post->timestamps = true;
 
+            $image = "";
             if($post->image){
                 $image = $post->getImage();
-            }
-            else{
-                $image = "";
             }
             
         $data = [
@@ -563,11 +533,10 @@ class PostController extends Controller
 
         if(in_array("view-all", $accessToken->abilities) || in_array("*", $accessToken->abilities)){
             $post = Post::withTrashed()->findOrFail($id);
+            
+            $image = "";
             if($post->image){
                 $image = $post->getImage();
-            }
-            else{
-                $image = "";
             }
             
             $data = [
@@ -583,12 +552,12 @@ class PostController extends Controller
         }
         else{
             $post = Post::findOrFail($id);
+            
+            $image = "";
             if($post->image){
                 $image = $post->getImage();
             }
-            else{
-                $image = "";
-            }
+      
             $data = [
                 "id" => $post->id,
                 "post" => $post->post,
@@ -872,22 +841,24 @@ class PostController extends Controller
         $accessToken = PersonalAccessToken::findToken($request->bearerToken())->abilities;
         $accessTokenUser = PersonalAccessToken::findToken($request->bearerToken())->tokenable;
         if(in_array("view-all", $accessToken) || in_array("*", $accessToken)){
-            $posts = Post::withTrashed()->select([
-                "id",
-                "post",
-                "likes",
-                "created_at",
-                "updated_at",
-                "deleted_at"
+            $posts = Post::withTrashed()->join("users", "posts.user_id", "users.id")->select([
+                "posts.id",
+                "posts.post",
+                "posts.likes",
+                "users.name",
+                "posts.created_at",
+                "posts.updated_at",
+                "posts.deleted_at"
             ])->where("post", "LIKE", "%".$search."%")->orderBy($sortBy, $sortDir)->paginate(30);
         }
         else{
-            $posts = Post::select([
-                "id",
-                "post",
-                "likes",
-                "created_at",
-                "updated_at"
+            $posts = Post::join("users", "posts.user_id", "users.id")->select([
+                "posts.id",
+                "posts.post",
+                "posts.likes",
+                "users.name",
+                "posts.created_at",
+                "posts.updated_at"
             ])->where("post", "LIKE", "%".$search."%")->orderBy($sortBy, $sortDir)->paginate(30);
         }
 

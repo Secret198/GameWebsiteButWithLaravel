@@ -93,7 +93,7 @@ class UserController extends Controller
         }
 
         // $user->regenerateToken();
-        $user->LoginTokenHandle();
+        $user->loginTokenHandle();
 
         return response()->json([
             "message" => __("messages.loginSuccess"),
@@ -276,7 +276,7 @@ class UserController extends Controller
         $user = User::findOrFail($id);
 
         $user->tokens()->delete();
-        $user->createToken("access", ["*"])->plainTextToken;     //Ha akarjuk akkor egyesével beírogatni
+        $user->createToken("access", ["*"])->plainTextToken;  
         $user->privilege = 10;
         $user->save();
 
@@ -617,6 +617,9 @@ class UserController extends Controller
         }
 
         $accessToken = PersonalAccessToken::findToken($request->bearerToken())->abilities;
+
+        $achievementCount = Achievement::count();
+
         if(in_array("view-all", $accessToken) || in_array("*", $accessToken)){
             $user = User::withTrashed()->findOrFail($id);
             $data = [
@@ -629,6 +632,7 @@ class UserController extends Controller
                 "boss1lvl" => $user->boss1lvl,
                 "boss2lvl" => $user->boss2lvl,
                 "boss3lvl" => $user->boss3lvl,
+                "achievement_count" => $achievementCount,
                 "deleted_at" => $user->deleted_at,
                 "created_at" => $user->created_at,
                 "updated_at" => $user->updated_at,
@@ -647,6 +651,7 @@ class UserController extends Controller
                 "boss1lvl" => $user->boss1lvl,
                 "boss2lvl" => $user->boss2lvl,
                 "boss3lvl" => $user->boss3lvl,
+                "achievement_count" => $achievementCount,
                 "created_at" => $user->created_at,
                 "privilege" => $user->privilege
             ];
@@ -879,22 +884,24 @@ class UserController extends Controller
         $sortDir = request()->query("sort_dir", $sortDirStr);
         $tokenAbilities = $token->abilities;
         if(in_array("view-all", $tokenAbilities) || in_array("*", $tokenAbilities)){
-            $posts = Post::withTrashed()->select([
-                "id",
-                "post",
-                "likes",
-                "created_at",
-                "updated_at",
-                "deleted_at"
+            $posts = Post::withTrashed()->join("users", "posts.user_id", "users.id")->select([
+                "posts.id",
+                "posts.post",
+                "posts.likes",
+                "users.name",
+                "posts.created_at",
+                "posts.updated_at",
+                "posts.deleted_at"
             ])->where("user_id", $userId)->orderBy($sortBy, $sortDir)->paginate(30);
         }
         else{
-            $posts = Post::select([
-                "id",
-                "post",
-                "likes",
-                "created_at",
-                "updated_at",
+            $posts = Post::join("users", "posts.user_id", "users.id")->select([
+                "posts.id",
+                "posts.post",
+                "posts.likes",
+                "users.name",
+                "posts.created_at",
+                "posts.updated_at",
             ])->where("user_id", $userId)->orderBy($sortBy, $sortDir)->paginate(30);
         }
 
@@ -1014,24 +1021,26 @@ class UserController extends Controller
         $sortDir = request()->query("sort_dir", $sortDirStr);
         $accessToken = PersonalAccessToken::findToken($request->bearerToken());
         if(in_array("view-all", $accessToken->abilities) || in_array("*", $accessToken->abilities)){
-            $posts = Post::withTrashed()->select([
-                "id",
-                "post",
-                "likes",
-                "created_at",
-                "updated_at",
-                "deleted_at",
+            $posts = Post::withTrashed()->join("users", "posts.user_id", "users.id")->select([
+                "posts.id",
+                "posts.post",
+                "posts.likes",
+                "users.name",
+                "posts.created_at",
+                "posts.updated_at",
+                "posts.deleted_at",
             ])->where("user_id", $accessToken->tokenable->id)
             ->where("post", "LIKE", "%".$search."%")
             ->orderBy($sortBy, $sortDir)->paginate(30);
         }
         else{
-            $posts = Post::select([
-                "id",
-                "post",
-                "likes",
-                "created_at",
-                "updated_at",
+            $posts = Post::join("users", "posts.user_id", "users.id")->select([
+                "posts.id",
+                "posts.post",
+                "posts.likes",
+                "users.name",
+                "posts.created_at",
+                "posts.updated_at",
             ])->where("user_id", $accessToken->tokenable->id)
             ->where("post", "LIKE", "%".$search."%")
             ->orderBy($sortBy, $sortDir)->paginate(30);
